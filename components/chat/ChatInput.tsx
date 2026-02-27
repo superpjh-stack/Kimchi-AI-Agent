@@ -14,7 +14,7 @@ interface ChatInputProps {
 export default function ChatInput({
   onSend,
   isStreaming = false,
-  placeholder = '김치공장에 대해 무엇이든 물어보세요...',
+  placeholder = '김치 제조에 대해 무엇이든 물어보세요 🌶️',
 }: ChatInputProps) {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -56,7 +56,7 @@ export default function ChatInput({
   const canSend = input.trim().length > 0 && !isStreaming;
 
   return (
-    <div className="border-t border-gray-200 bg-white px-4 py-3 chat-bottom-padding lg:pb-3">
+    <div className="border-t border-kimchi-beige-dark bg-white px-4 py-3 chat-bottom-padding lg:pb-3">
       <div className="flex items-end gap-2 max-w-4xl mx-auto">
         {/* Voice Input */}
         <VoiceInput onTranscript={handleVoiceTranscript} disabled={isStreaming} />
@@ -73,13 +73,13 @@ export default function ChatInput({
             rows={1}
             className={clsx(
               'w-full resize-none rounded-2xl border px-4 py-3 pr-12',
-              'text-sm leading-relaxed text-gray-800 placeholder-gray-400',
-              'focus:outline-none focus:ring-2 focus:ring-kimchi-red focus:border-transparent',
+              'text-sm leading-relaxed text-brand-text-primary placeholder-brand-text-muted',
+              'focus:outline-none focus:ring-2 focus:ring-kimchi-orange focus:border-transparent',
               'transition-all duration-200',
               'max-h-40 overflow-y-auto',
               {
-                'border-gray-300 bg-white': !isStreaming,
-                'border-gray-200 bg-gray-50 cursor-not-allowed': isStreaming,
+                'border-kimchi-beige-dark bg-white': !isStreaming,
+                'border-kimchi-beige bg-kimchi-cream cursor-not-allowed': isStreaming,
               }
             )}
             style={{ height: 'auto', minHeight: '48px' }}
@@ -95,18 +95,18 @@ export default function ChatInput({
           className={clsx(
             'flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200',
             'min-h-[48px] min-w-[48px]',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-kimchi-red',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-kimchi-orange',
             {
               'bg-kimchi-red text-white hover:bg-kimchi-red-dark shadow-sm': canSend,
-              'bg-gray-100 text-gray-300 cursor-not-allowed': !canSend,
+              'bg-kimchi-beige text-brand-text-muted cursor-not-allowed': !canSend,
             }
           )}
         >
           {isStreaming ? (
             <span className="flex gap-0.5 items-center">
-              <span className="loading-dot w-1.5 h-1.5 bg-gray-400 rounded-full" />
-              <span className="loading-dot w-1.5 h-1.5 bg-gray-400 rounded-full" />
-              <span className="loading-dot w-1.5 h-1.5 bg-gray-400 rounded-full" />
+              <span className="loading-dot w-1.5 h-1.5 bg-brand-text-muted rounded-full" />
+              <span className="loading-dot w-1.5 h-1.5 bg-brand-text-muted rounded-full" />
+              <span className="loading-dot w-1.5 h-1.5 bg-brand-text-muted rounded-full" />
             </span>
           ) : (
             <Send size={16} />
@@ -114,7 +114,7 @@ export default function ChatInput({
         </button>
       </div>
 
-      <p className="text-center text-xs text-gray-400 mt-2">
+      <p className="text-center text-xs text-brand-text-muted mt-2">
         Enter로 전송 · Shift+Enter로 줄바꿈
       </p>
     </div>

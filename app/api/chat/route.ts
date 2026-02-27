@@ -7,7 +7,7 @@ import { createOpenAISSEStream, OPENAI_CHAT_MODEL } from '@/lib/ai/openai-chat';
 import { retrieveContext } from '@/lib/rag/pipeline';
 import { createSensorClient } from '@/lib/process/sensor-client';
 import { isBkendConfigured, conversationsDb, messagesDb } from '@/lib/db/bkend';
-import { addMessageToConversation } from '@/lib/db/conversations-store';
+import { addMessageToConversation, setConversationEntry, createConversationEntry, conversationStore } from '@/lib/db/conversations-store';
 import { generateTitle, truncate } from '@/lib/utils/markdown';
 import type { ChatRequest, Message } from '@/types';
 
@@ -100,7 +100,14 @@ export async function POST(req: Request): Promise<Response> {
           }).catch(console.error)
         );
       } else {
-        // 인메모리 폴백
+        // 파일 저장소 폴백 — 대화가 없으면 새로 생성 후 저장
+        if (!conversationStore.has(conversationId)) {
+          const conv = createConversationEntry(message);
+          // 전달받은 conversationId 사용
+          (conv as { id: string }).id = conversationId;
+          setConversationEntry(conversationId, { conversation: conv, messages: [] });
+        }
+        addMessageToConversation(conversationId, 'user', message);
         addMessageToConversation(conversationId, 'assistant', fullText, ragResult.sources);
       }
     };
@@ -110,7 +117,7 @@ export async function POST(req: Request): Promise<Response> {
       sseStream = createOllamaSSEStream(chatMessages, ragResult.sources);
     } else if (USE_OPENAI) {
       console.log(`[/api/chat] Using OpenAI model: ${OPENAI_CHAT_MODEL}`);
-      sseStream = createOpenAISSEStream(chatMessages, ragResult.sources);
+      sseStream = createOpenAISSEStream(chatMessages, ragResult.sources, onComplete, conversationId);
     } else {
       console.log(`[/api/chat] Using Claude model: ${MODEL}`);
       const stream = anthropic.messages.stream({

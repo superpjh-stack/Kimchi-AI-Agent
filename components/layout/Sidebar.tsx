@@ -26,11 +26,11 @@ function groupConversationsByDate(conversations: Conversation[]) {
   const weekAgo = new Date(today);
   weekAgo.setDate(weekAgo.getDate() - 7);
 
-  const groups: { label: string; items: Conversation[] }[] = [
-    { label: '오늘', items: [] },
-    { label: '어제', items: [] },
-    { label: '이번 주', items: [] },
-    { label: '이전', items: [] },
+  const groups: { label: string; emoji: string; items: Conversation[] }[] = [
+    { label: '오늘', emoji: '🌶️', items: [] },
+    { label: '어제', emoji: '🥬', items: [] },
+    { label: '이번 주', emoji: '🍚', items: [] },
+    { label: '이전', emoji: '🏭', items: [] },
   ];
 
   for (const conv of conversations) {
@@ -71,17 +71,19 @@ export default function Sidebar({
   const groups = groupConversationsByDate(conversations);
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-white border-r border-gray-200 w-64 lg:w-72">
+    <div className="flex flex-col h-full bg-white border-r border-kimchi-beige-dark w-64 lg:w-72">
       {/* Header / Logo */}
-      <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🥬</span>
+      <div className="flex items-center justify-between px-4 py-4 border-b border-kimchi-beige bg-kimchi-cream">
+        <div className="flex items-center gap-2.5">
+          <div className="w-10 h-10 rounded-xl bg-kimchi-red flex items-center justify-center shadow-sm">
+            <span className="text-xl">🌶️</span>
+          </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h1 className="font-bold text-gray-900 text-base leading-tight">김치 Agent</h1>
+              <h1 className="font-bold text-brand-text-primary text-base leading-tight">김치공장 AI</h1>
               <AlertBadge criticalCount={criticalAlerts} warningCount={warningAlerts} />
             </div>
-            <p className="text-xs text-gray-400">김치공장 AI 어시스턴트</p>
+            <p className="text-xs text-brand-text-muted">김치 제조 전문 도우미 🥬</p>
           </div>
         </div>
         {/* Mobile close button */}
@@ -89,7 +91,7 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onClose}
-            className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="lg:hidden p-1.5 rounded-lg text-brand-text-muted hover:text-brand-text-secondary hover:bg-kimchi-beige transition-colors"
           >
             <X size={18} />
           </button>
@@ -106,7 +108,7 @@ export default function Sidebar({
             hover:bg-kimchi-red-dark transition-colors shadow-sm"
         >
           <Plus size={16} />
-          새 대화
+          새 대화 시작하기
         </button>
       </div>
 
@@ -114,16 +116,17 @@ export default function Sidebar({
       <div className="flex-1 overflow-y-auto px-2 pb-2">
         {conversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <MessageSquare size={32} className="text-gray-300 mb-2" />
-            <p className="text-sm text-gray-400">대화 기록이 없습니다</p>
-            <p className="text-xs text-gray-300 mt-1">새 대화를 시작해보세요</p>
+            <div className="text-4xl mb-3 animate-float">🥬</div>
+            <p className="text-sm text-brand-text-secondary font-medium">아직 대화가 없어요</p>
+            <p className="text-xs text-brand-text-muted mt-1">김치에 대해 무엇이든 물어보세요!</p>
           </div>
         ) : (
           <div className="space-y-4">
             {groups.map((group) => (
               <div key={group.label}>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 py-1">
-                  {group.label}
+                <p className="text-xs font-semibold text-brand-text-muted tracking-wider px-3 py-1 flex items-center gap-1.5">
+                  <span>{group.emoji}</span>
+                  <span>{group.label}</span>
                 </p>
                 <div className="space-y-0.5">
                   {group.items.map((conv) => (
@@ -134,13 +137,13 @@ export default function Sidebar({
                       className={clsx(
                         'w-full text-left px-3 py-2.5 rounded-xl transition-all duration-150 group',
                         {
-                          'bg-red-50 text-kimchi-red': activeId === conv.id,
-                          'text-gray-700 hover:bg-gray-50': activeId !== conv.id,
+                          'bg-kimchi-red/10 text-kimchi-red border border-kimchi-red/20': activeId === conv.id,
+                          'text-brand-text-primary hover:bg-kimchi-cream': activeId !== conv.id,
                         }
                       )}
                     >
                       <p className="text-sm font-medium truncate">{conv.title}</p>
-                      <p className="text-xs text-gray-400 truncate mt-0.5">
+                      <p className="text-xs text-brand-text-muted truncate mt-0.5">
                         {conv.lastMessage}
                       </p>
                     </button>
@@ -153,17 +156,17 @@ export default function Sidebar({
       </div>
 
       {/* Footer Links */}
-      <div className="border-t border-gray-100 px-2 py-3 space-y-0.5">
+      <div className="border-t border-kimchi-beige px-2 py-3 space-y-0.5 bg-kimchi-cream/50">
         <Link
           href="/documents"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors text-sm"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-brand-text-secondary hover:bg-kimchi-beige hover:text-brand-text-primary transition-colors text-sm"
         >
           <FileText size={16} />
           문서 관리
         </Link>
         <Link
           href="/settings"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors text-sm"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-brand-text-secondary hover:bg-kimchi-beige hover:text-brand-text-primary transition-colors text-sm"
         >
           <Settings size={16} />
           설정

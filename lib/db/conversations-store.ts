@@ -1,11 +1,14 @@
-// 인메모리 대화 스토어 — 별도 모듈로 분리 (route 파일에서 non-HTTP export 방지)
+// 대화 스토어 — 파일 기반 영구 저장 (.local-db/conversations.json)
 import { generateTitle, truncate } from '@/lib/utils/markdown';
+import { loadConversations, saveConversations } from '@/lib/db/file-store';
 import type { Conversation, Message } from '@/types';
 
-export const conversationStore = new Map<
-  string,
-  { conversation: Conversation; messages: Message[] }
->();
+// 서버 시작 시 파일에서 로드
+export const conversationStore = loadConversations();
+
+function save() {
+  saveConversations(conversationStore);
+}
 
 export function createConversationEntry(firstUserMessage: string): Conversation {
   const now = new Date().toISOString();
@@ -17,6 +20,22 @@ export function createConversationEntry(firstUserMessage: string): Conversation 
     createdAt: now,
     updatedAt: now,
   };
+}
+
+/** 대화 추가 + 파일 저장 */
+export function setConversationEntry(
+  id: string,
+  entry: { conversation: Conversation; messages: Message[] }
+): void {
+  conversationStore.set(id, entry);
+  save();
+}
+
+/** 대화 삭제 + 파일 저장 */
+export function deleteConversationEntry(id: string): boolean {
+  const existed = conversationStore.delete(id);
+  if (existed) save();
+  return existed;
 }
 
 export function addMessageToConversation(
@@ -41,5 +60,6 @@ export function addMessageToConversation(
   entry.conversation.lastMessage = truncate(content, 50);
   entry.conversation.updatedAt = new Date().toISOString();
 
+  save();
   return msg;
 }

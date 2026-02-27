@@ -12,7 +12,7 @@ export async function DELETE(
   const { id } = params;
 
   // 벡터 스토어 + BM25 인덱스에서 동시 제거
-  removeDocumentFull(id);
+  await removeDocumentFull(id);
 
   if (isBkendConfigured()) {
     try {

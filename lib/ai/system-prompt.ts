@@ -1,5 +1,6 @@
 // B1: 김치공장 시스템 프롬프트
 import type { SensorData } from '@/lib/process/sensor-client';
+import type { FermentationPrediction, QualityPrediction } from '@/lib/ml/predictor';
 
 export const KIMCHI_SYSTEM_PROMPT = `
 당신은 김치공장 전문 AI 어시스턴트 "김치 Agent"입니다.
@@ -43,7 +44,11 @@ export const KIMCHI_SYSTEM_PROMPT = `
  * Build the final system prompt by injecting RAG context and optional sensor data.
  * If no context is available, provides a fallback message.
  */
-export function buildSystemPrompt(ragContext: string, sensorData?: SensorData): string {
+export function buildSystemPrompt(
+  ragContext: string,
+  sensorData?: SensorData,
+  mlPrediction?: { fermentation?: FermentationPrediction; quality?: QualityPrediction }
+): string {
   const contextText = ragContext.trim()
     ? ragContext
     : '관련 문서가 없습니다. 일반 지식을 기반으로 답변합니다.';
@@ -67,6 +72,26 @@ export function buildSystemPrompt(ragContext: string, sensorData?: SensorData): 
 이 수치를 참고하여 현재 공정 상태에 맞는 구체적인 답변을 제공하세요.
 `;
     prompt += sensorSection;
+  }
+
+  if (mlPrediction?.fermentation) {
+    const p = mlPrediction.fermentation;
+    const stageName = { early: '초기', mid: '중기', late: '후기', complete: '완료' }[p.stage];
+    prompt += `\n## ML 발효 예측\n`;
+    prompt += `완성도: ${(p.fermentationPct * 100).toFixed(1)}% (${stageName} 단계)\n`;
+    prompt += `예상 완료: ${new Date(p.eta).toLocaleString('ko-KR')}\n`;
+    prompt += `신뢰도: ${(p.confidence * 100).toFixed(0)}%\n`;
+    if (p.anomaly) prompt += `⚠️ 이상 감지: ${p.anomalyReason}\n`;
+  }
+
+  if (mlPrediction?.quality) {
+    const q = mlPrediction.quality;
+    prompt += `\n## ML 품질 예측\n`;
+    prompt += `등급: ${q.grade}등급 (신뢰도 ${(q.confidence * 100).toFixed(0)}%)\n`;
+    prompt += `근거: ${q.rationale}\n`;
+    if (q.recommendations.length > 0) {
+      prompt += `권고사항: ${q.recommendations.join('; ')}\n`;
+    }
   }
 
   return prompt;

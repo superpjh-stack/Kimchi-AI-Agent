@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import type { Message, SSEEvent } from '@/types';
+import type { Message, SSEEvent, ChatStatus } from '@/types';
 
 function makeId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -10,8 +10,10 @@ function makeId() {
 export function useChat(conversationId?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [chatStatus, setChatStatus] = useState<ChatStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const doneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -43,6 +45,8 @@ export function useChat(conversationId?: string) {
       ]);
 
       setIsStreaming(true);
+      setChatStatus('rag-searching');
+      if (doneTimerRef.current) clearTimeout(doneTimerRef.current);
       abortRef.current = new AbortController();
 
       try {
@@ -82,6 +86,7 @@ export function useChat(conversationId?: string) {
               const event = JSON.parse(jsonStr) as SSEEvent;
 
               if (event.type === 'token') {
+                setChatStatus((prev) => prev === 'rag-searching' ? 'llm-generating' : prev);
                 setMessages((prev) =>
                   prev.map((m) =>
                     m.id === assistantId
@@ -98,6 +103,8 @@ export function useChat(conversationId?: string) {
                   )
                 );
               } else if (event.type === 'done') {
+                setChatStatus('done');
+                doneTimerRef.current = setTimeout(() => setChatStatus('idle'), 1500);
                 setMessages((prev) =>
                   prev.map((m) =>
                     m.id === assistantId ? { ...m, isStreaming: false } : m
@@ -116,6 +123,8 @@ export function useChat(conversationId?: string) {
 
         const msg = err instanceof Error ? err.message : '알 수 없는 오류';
         setError(msg);
+        setChatStatus('error');
+        doneTimerRef.current = setTimeout(() => setChatStatus('idle'), 2000);
         setMessages((prev) =>
           prev.map((m) =>
             m.id === assistantId
@@ -133,10 +142,12 @@ export function useChat(conversationId?: string) {
 
   const clearMessages = useCallback(() => {
     abortRef.current?.abort();
+    if (doneTimerRef.current) clearTimeout(doneTimerRef.current);
     setMessages([]);
     setError(null);
     setIsStreaming(false);
+    setChatStatus('idle');
   }, []);
 
-  return { messages, isStreaming, error, sendMessage, clearMessages };
+  return { messages, isStreaming, chatStatus, error, sendMessage, clearMessages };
 }

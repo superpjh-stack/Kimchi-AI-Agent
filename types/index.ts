@@ -89,6 +89,9 @@ export interface UploadResponse {
 }
 
 // SSE event types
+/** AI 처리 상태 — RAG 검색 → LLM 생성 → 완료 */
+export type ChatStatus = 'idle' | 'rag-searching' | 'llm-generating' | 'done' | 'error';
+
 export type SSEEventType = 'token' | 'sources' | 'done' | 'error';
 
 export interface SSETokenEvent {

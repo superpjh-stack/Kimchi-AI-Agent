@@ -1,5 +1,5 @@
 'use client';
-// E6: 업로드된 문서 목록 + 삭제
+// E6: uploaded document list + delete
 import { useState, useEffect, useCallback } from 'react';
 import { Trash2, FileText, RefreshCw } from 'lucide-react';
 import type { KimchiDocument } from '@/types';
@@ -61,11 +61,13 @@ export default function DocumentList() {
 
   return (
     <div className="mt-6">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="text-sm font-semibold text-gray-800">업로드된 문서</h3>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <h3 className="text-sm font-semibold text-brand-text-primary flex items-center gap-1.5">
+            <span>📋</span> 업로드된 문서
+          </h3>
+          <p className="text-xs text-brand-text-muted mt-0.5">
             총 {documents.length}개 · 청크 {vectorStoreSize}개
           </p>
         </div>
@@ -73,40 +75,41 @@ export default function DocumentList() {
           type="button"
           onClick={fetchDocuments}
           disabled={loading}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40"
+          className="p-1.5 rounded-lg text-brand-text-muted hover:text-brand-text-secondary hover:bg-kimchi-beige transition-colors disabled:opacity-40"
           title="새로고침"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
 
-      {/* 목록 */}
+      {/* List */}
       {loading && documents.length === 0 ? (
-        <div className="text-xs text-gray-400 py-4 text-center">로딩 중...</div>
+        <div className="text-xs text-brand-text-muted py-4 text-center">로딩 중...</div>
       ) : documents.length === 0 ? (
         <div className="flex flex-col items-center py-8 text-center">
-          <FileText size={28} className="text-gray-300 mb-2" />
-          <p className="text-sm text-gray-400">업로드된 문서가 없습니다</p>
+          <div className="text-3xl mb-2">📄</div>
+          <p className="text-sm text-brand-text-secondary">업로드된 문서가 없습니다</p>
+          <p className="text-xs text-brand-text-muted mt-1">문서를 업로드하면 AI가 참고합니다</p>
         </div>
       ) : (
         <div className="space-y-2">
           {documents.map((doc) => (
             <div
               key={doc.id}
-              className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100 hover:border-gray-200 transition-colors"
+              className="flex items-center gap-3 p-3 rounded-xl bg-white border border-kimchi-beige-dark hover:border-kimchi-orange/40 transition-colors"
             >
-              <FileText size={16} className="text-gray-400 shrink-0" />
+              <FileText size={16} className="text-kimchi-orange shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 truncate">{doc.name}</p>
-                <p className="text-xs text-gray-400">
-                  {doc.fileType.toUpperCase()} · {formatFileSize(doc.fileSize)} · 청크 {doc.chunks}개 · {formatDate(doc.createdAt)}
+                <p className="text-sm font-medium text-brand-text-primary truncate">{doc.name}</p>
+                <p className="text-xs text-brand-text-muted">
+                  {(doc.fileType ?? doc.type ?? '').toUpperCase()} · {formatFileSize(doc.fileSize ?? 0)} · 청크 {doc.chunks}개 · {formatDate(doc.createdAt)}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => handleDelete(doc)}
                 disabled={deletingId === doc.id}
-                className="p-1.5 rounded-lg text-gray-300 hover:text-kimchi-red hover:bg-red-50 transition-colors disabled:opacity-40 shrink-0"
+                className="p-1.5 rounded-lg text-brand-text-muted hover:text-kimchi-red hover:bg-kimchi-red/5 transition-colors disabled:opacity-40 shrink-0"
                 title="삭제"
               >
                 <Trash2 size={14} />

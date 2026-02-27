@@ -31,3 +31,12 @@ next-env.d.ts
 # Claude Code / bkit local settings
 .claude/
 .bkit/
+
+# Local file-based DB (개발용 영구 저장)
+.local-db/
+
+# Test coverage (CI에서 생성)
+coverage/
+
+# PDCA 스냅샷 (자동 생성, 임시)
+docs/.pdca-snapshots/

@@ -1,5 +1,5 @@
 // GET/DELETE /api/conversations/[id]
-import { conversationStore } from '@/lib/db/conversations-store';
+import { conversationStore, deleteConversationEntry } from '@/lib/db/conversations-store';
 import { isBkendConfigured, conversationsDb, messagesDb } from '@/lib/db/bkend';
 import { ok, err } from '@/lib/utils/api-response';
 import type { Message } from '@/types';
@@ -55,8 +55,8 @@ export async function DELETE(
     }
   }
 
-  // 인메모리 폴백
-  const existed = conversationStore.delete(params.id);
+  // 파일 저장소 폴백
+  const existed = deleteConversationEntry(params.id);
   if (!existed) return err('NOT_FOUND', 'Conversation not found', 404);
   return ok({ deleted: true });
 }

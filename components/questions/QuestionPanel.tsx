@@ -15,9 +15,9 @@ const CATEGORIES = [
     id: 'process',
     label: '공정 상태',
     emoji: '🌡️',
-    color: 'text-blue-600',
-    activeBg: 'bg-blue-100',
-    border: 'border-blue-200',
+    color: 'text-kimchi-orange',
+    activeBg: 'bg-kimchi-orange/10',
+    border: 'border-kimchi-orange/20',
     questions: [
       '지금 발효실 온도 몇 도야?',
       '현재 발효실 습도는 얼마야?',
@@ -35,9 +35,9 @@ const CATEGORIES = [
     id: 'alerts',
     label: '이상 대응',
     emoji: '🚨',
-    color: 'text-red-600',
-    activeBg: 'bg-red-100',
-    border: 'border-red-200',
+    color: 'text-kimchi-red',
+    activeBg: 'bg-kimchi-red/10',
+    border: 'border-kimchi-red/20',
     questions: [
       '지금 경보 있어?',
       '현재 경고 상태인 항목 알려줘',
@@ -55,9 +55,9 @@ const CATEGORIES = [
     id: 'fermentation',
     label: '발효 지식',
     emoji: '🥬',
-    color: 'text-green-700',
-    activeBg: 'bg-green-100',
-    border: 'border-green-200',
+    color: 'text-kimchi-green',
+    activeBg: 'bg-kimchi-green/10',
+    border: 'border-kimchi-green/20',
     questions: [
       '최적 발효 온도 범위가 어떻게 돼?',
       '김치 발효 원리를 간단히 설명해줘',
@@ -76,8 +76,8 @@ const CATEGORIES = [
     label: '품질/HACCP',
     emoji: '✅',
     color: 'text-purple-600',
-    activeBg: 'bg-purple-100',
-    border: 'border-purple-200',
+    activeBg: 'bg-purple-50',
+    border: 'border-purple-100',
     questions: [
       '오늘 품질 체크 항목 알려줘',
       'HACCP 중요관리점(CCP)이 뭐야?',
@@ -95,9 +95,9 @@ const CATEGORIES = [
     id: 'documents',
     label: '문서 검색',
     emoji: '📄',
-    color: 'text-orange-600',
-    activeBg: 'bg-orange-100',
-    border: 'border-orange-200',
+    color: 'text-kimchi-orange',
+    activeBg: 'bg-kimchi-orange/10',
+    border: 'border-kimchi-orange/20',
     questions: [
       '발효 공정 가이드에서 온도 관련 내용 찾아줘',
       'HACCP 문서에서 CCP 기준 알려줘',
@@ -115,9 +115,9 @@ const CATEGORIES = [
     id: 'production',
     label: '생산 운영',
     emoji: '🏭',
-    color: 'text-gray-700',
-    activeBg: 'bg-gray-100',
-    border: 'border-gray-300',
+    color: 'text-brand-text-secondary',
+    activeBg: 'bg-kimchi-beige',
+    border: 'border-kimchi-beige-dark',
     questions: [
       '이번 배치 언제 완료돼?',
       '오늘 생산 계획 알려줘',
@@ -152,10 +152,10 @@ export default function QuestionPanel({
         onClick={onClose}
       />
 
-      {/* Panel — desktop: static in flex row | mobile: fixed overlay from right */}
+      {/* Panel */}
       <div
         className={clsx(
-          'flex flex-col bg-white border-l border-gray-200',
+          'flex flex-col bg-white border-l border-kimchi-beige-dark',
           /* Mobile: fixed overlay */
           'fixed inset-y-0 right-0 z-50 w-80',
           /* Desktop: static panel in layout flow */
@@ -165,20 +165,22 @@ export default function QuestionPanel({
         aria-label="질문 목록"
       >
         {/* Panel header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 shrink-0">
-          <span className="text-sm font-semibold text-gray-800">질문 목록</span>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-kimchi-beige shrink-0 bg-kimchi-cream">
+          <span className="text-sm font-semibold text-brand-text-primary flex items-center gap-1.5">
+            <span>🍚</span> 질문 목록
+          </span>
           <button
             type="button"
             onClick={onClose}
-            className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors"
+            className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-kimchi-beige transition-colors"
             aria-label="닫기"
           >
-            <X size={16} className="text-gray-500" />
+            <X size={16} className="text-brand-text-muted" />
           </button>
         </div>
 
-        {/* Category tabs — horizontal scroll */}
-        <div className="flex gap-1 px-2 py-2 overflow-x-auto shrink-0 border-b border-gray-100 scrollbar-hide">
+        {/* Category tabs */}
+        <div className="flex gap-1 px-2 py-2 overflow-x-auto shrink-0 border-b border-kimchi-beige scrollbar-hide">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
@@ -188,7 +190,7 @@ export default function QuestionPanel({
                 'flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors',
                 activeCategory === cat.id
                   ? `${cat.activeBg} ${cat.color} border ${cat.border}`
-                  : 'text-gray-500 hover:bg-gray-100'
+                  : 'text-brand-text-muted hover:bg-kimchi-cream'
               )}
             >
               <span>{cat.emoji}</span>
@@ -210,9 +212,9 @@ export default function QuestionPanel({
                 }}
                 className={clsx(
                   'w-full flex items-start gap-2 px-3 py-2.5 rounded-lg text-left',
-                  'text-xs text-gray-700 leading-snug',
-                  'hover:bg-gray-50 active:bg-gray-100 transition-colors',
-                  'border border-transparent hover:border-gray-200'
+                  'text-xs text-brand-text-primary leading-snug',
+                  'hover:bg-kimchi-cream active:bg-kimchi-beige transition-colors',
+                  'border border-transparent hover:border-kimchi-beige-dark'
                 )}
               >
                 <span className={clsx('mt-0.5 shrink-0', currentCategory.color)}>
@@ -225,8 +227,8 @@ export default function QuestionPanel({
         </div>
 
         {/* Footer hint */}
-        <div className="px-4 py-2.5 border-t border-gray-100 shrink-0">
-          <p className="text-xs text-gray-400 text-center">질문을 클릭하면 채팅으로 전송됩니다</p>
+        <div className="px-4 py-2.5 border-t border-kimchi-beige shrink-0 bg-kimchi-cream/50">
+          <p className="text-xs text-brand-text-muted text-center">질문을 클릭하면 채팅으로 전송됩니다 🌶️</p>
         </div>
       </div>
     </>

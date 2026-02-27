@@ -13,7 +13,7 @@ export class LocalEmbedder implements EmbeddingProvider {
   private readonly model: string;
 
   constructor() {
-    this.baseUrl = (process.env.OLLAMA_URL ?? 'http://localhost:11434').replace(/\/+$/, '');
+    this.baseUrl = (process.env.OLLAMA_BASE_URL ?? process.env.OLLAMA_URL ?? 'http://localhost:11434').replace(/\/+$/, '');
     this.model = process.env.OLLAMA_EMBEDDING_MODEL ?? DEFAULT_MODEL;
   }
 

@@ -12,8 +12,10 @@ export function useConversations() {
     try {
       const res = await fetch('/api/conversations');
       if (!res.ok) return;
-      const data = await res.json() as { conversations: Conversation[] };
-      setConversations(data.conversations ?? []);
+      const json = await res.json();
+      // API는 { data: { conversations: [...] }, meta: {...} } 형식 반환
+      const list = json.data?.conversations ?? json.conversations ?? [];
+      setConversations(list);
     } catch {
       // silently fail
     } finally {
@@ -31,7 +33,9 @@ export function useConversations() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: '새 대화' }),
     });
-    const data = await res.json() as { id: string; title: string };
+    const json = await res.json();
+    // API는 { data: Conversation } 형식 반환
+    const data = (json.data ?? json) as { id: string; title: string };
     const newConv: Conversation = {
       id: data.id,
       title: data.title,

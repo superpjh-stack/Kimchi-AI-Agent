@@ -3,7 +3,7 @@
 // 미설정 시 → 인메모리 폴백 (개발/테스트용)
 import { ok, created } from '@/lib/utils/api-response';
 import { isBkendConfigured, conversationsDb } from '@/lib/db/bkend';
-import { conversationStore, createConversationEntry } from '@/lib/db/conversations-store';
+import { conversationStore, createConversationEntry, setConversationEntry } from '@/lib/db/conversations-store';
 import { generateTitle, truncate } from '@/lib/utils/markdown';
 
 export const runtime = 'nodejs';
@@ -57,6 +57,6 @@ export async function POST(req: Request): Promise<Response> {
 
   // 인메모리 폴백
   const conversation = createConversationEntry(firstMessage);
-  conversationStore.set(conversation.id, { conversation, messages: [] });
+  setConversationEntry(conversation.id, { conversation, messages: [] });
   return created(conversation);
 }

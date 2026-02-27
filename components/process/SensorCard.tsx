@@ -1,4 +1,4 @@
-// E3: 개별 센서 수치 카드
+// E3: individual sensor value card
 export type SensorStatus = 'normal' | 'warning' | 'critical';
 
 interface SensorCardProps {
@@ -10,9 +10,9 @@ interface SensorCardProps {
 }
 
 const STATUS_STYLES: Record<SensorStatus, string> = {
-  normal:   'text-kimchi-green bg-green-50 border-green-100',
-  warning:  'text-yellow-600 bg-yellow-50 border-yellow-100',
-  critical: 'text-kimchi-red bg-red-50 border-red-100',
+  normal:   'text-kimchi-green bg-kimchi-green/5 border-kimchi-green/20',
+  warning:  'text-kimchi-orange bg-kimchi-orange/5 border-kimchi-orange/20',
+  critical: 'text-kimchi-red bg-kimchi-red/5 border-kimchi-red/20',
 };
 
 const STATUS_LABEL: Record<SensorStatus, string> = {

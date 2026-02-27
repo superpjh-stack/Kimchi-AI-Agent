@@ -127,3 +127,142 @@
 ---
 
 *Plan created by CTO Team — 2026-02-27*
+
+---
+
+## 10. Enhancement: 상세 선택 UI
+
+**요청 배경**: 사용자(공장 관리자)가 "5개 청킹 방법에 대해 더 상세한 선택을 하면 좋겠다"고 요청.
+**추가일**: 2026-02-27
+**우선순위**: Medium
+**대상 파일**: `components/documents/ChunkingOptions.tsx`
+
+---
+
+### 10.1 개선 요구사항 분석
+
+#### 10.1.1 예상 청크 수 실시간 계산
+
+- 파일 크기(바이트 또는 문자 수) 기반 근사치 계산
+- 각 전략별 계산 공식:
+  - **recursive / fixed**: `Math.ceil(fileChars / (chunkSize - chunkOverlap))`
+  - **paragraph**: `Math.ceil(fileChars / maxChunkSize)` (실제 문단 수 알 수 없으므로 근사)
+  - **row**: `Math.ceil(estimatedRows / rowsPerChunk)` (파일 바이트 기반 행 수 추정)
+  - **sentence**: `Math.ceil(estimatedSentences / (sentencesPerChunk - sentenceOverlap))` (문자당 평균 문장 길이 추정)
+- UI 표시: 선택된 전략 카드 하단 또는 고급 설정 상단에 "예상 청크 수: ~N개" 뱃지로 표시
+- 파라미터 변경 시 실시간 업데이트 (debounce 불필요, 단순 계산)
+- `props`에 `fileSizeBytes?: number` 또는 `fileCharCount?: number` 추가
+
+#### 10.1.2 파라미터 슬라이더 컨트롤
+
+- 현재 숫자 입력 필드(`<input type="number">`)를 **슬라이더 + 숫자 병행** 방식으로 교체
+- 각 파라미터별 슬라이더 범위:
+
+| 파라미터 | min | max | step | 전략 |
+|---------|-----|-----|------|------|
+| chunkSize | 200 | 5000 | 100 | recursive, fixed |
+| chunkOverlap | 0 | 1000 | 50 | recursive, fixed |
+| maxChunkSize | 500 | 10000 | 500 | paragraph |
+| rowsPerChunk | 10 | 200 | 10 | row |
+| sentencesPerChunk | 2 | 50 | 1 | sentence |
+| sentenceOverlap | 0 | 10 | 1 | sentence |
+
+- 슬라이더와 숫자 입력 쌍방향 동기화 (슬라이더 변경 → 숫자 업데이트, 숫자 직접 입력 → 슬라이더 이동)
+- `chunkOverlap`은 `chunkSize`의 50% 이하 제약 표시 (시각적 경고, 차단은 하지 않음)
+
+#### 10.1.3 각 전략의 동작 방식 시각적 표현
+
+- 전략 카드 선택 시 확장 영역에 ASCII 다이어그램 또는 아이콘 기반 표현 표시
+- 전략별 표현:
+
+| 전략 | 시각적 표현 |
+|------|------------|
+| recursive | `[=====|==][==|=====][=====]` — 가변 크기, 오버랩 경계 표시 |
+| fixed | `[=====][=====][=====]` — 균등한 블록 |
+| paragraph | `[=문단1=][==문단2==][=문단3=]` — 불규칙 크기 블록 |
+| row | `[HDR\|R1~50][HDR\|R51~100]` — 헤더 보존 행 묶음 |
+| sentence | `[S1 S2...S10][S9 S10...S19]` — 문장 오버랩 표시 |
+
+- 구현: 단순 `<pre>` 또는 인라인 div로 색상 블록 표현 (SVG 불필요)
+- 카드 선택 시에만 표시 (항상 보이지 않도록)
+
+#### 10.1.4 파라미터 변경 시 실시간 미리보기 업데이트
+
+- 슬라이더/숫자 입력 변경 이벤트(`onChange`)마다 예상 청크 수 즉시 재계산
+- `onChange` prop 호출 전에 로컬 state로 계산 후 UI 반영 (불필요한 상위 리렌더 방지)
+- 예상 청크 수 외에 "평균 청크 크기" 근사치도 추가 표시 (`fileSizeBytes / expectedChunks`)
+
+#### 10.1.5 전략별 장단점 요약 텍스트 표시
+
+- 각 전략 카드에 펼쳐지는 장단점 섹션 추가 (선택된 카드에만 표시)
+- 내용:
+
+| 전략 | 장점 | 단점 |
+|------|------|------|
+| recursive | 문맥 보존 우수, 범용성 높음 | 처리 시간 다소 길 수 있음 |
+| fixed | 처리 속도 빠름, 예측 가능한 청크 수 | 문장/단어 중간 분할 가능 |
+| paragraph | 의미 단위 보존, 자연스러운 분할 | 문단 길이가 불균등할 경우 성능 차이 |
+| row | 테이블 헤더 보존, 데이터 정합성 유지 | 비테이블 문서에는 부적합 |
+| sentence | FAQ/Q&A 구조에 최적, 질의응답 품질 향상 | 문장 경계가 불명확한 문서에는 불리 |
+
+---
+
+### 10.2 UI 변경 사항 요약
+
+**현재 구조** (`ChunkingOptions.tsx`):
+```
+[라디오 카드 목록]
+  - 이름 + 추천 배지
+  - 설명 텍스트 (1줄)
+[고급 설정 토글]
+  - 숫자 입력 필드
+```
+
+**개선 목표 구조**:
+```
+[라디오 카드 목록]
+  - 이름 + 추천 배지 + 예상 청크 수 뱃지 (선택 시)
+  - 설명 텍스트 (1줄)
+  - [선택된 카드만] 동작 시각화 다이어그램
+  - [선택된 카드만] 장점 / 단점 2열 요약
+[파라미터 설정 (항상 표시, 고급 토글 제거)]
+  - 슬라이더 + 숫자 입력 병행
+  - 파라미터 변경 시 예상 청크 수 실시간 업데이트
+```
+
+---
+
+### 10.3 Props 변경
+
+```typescript
+interface ChunkingOptionsProps {
+  fileExtension: string;
+  value: ChunkingOptionsType;
+  onChange: (options: ChunkingOptionsType) => void;
+  fileCharCount?: number;  // 추가: 예상 청크 수 계산용 (없으면 계산 생략)
+}
+```
+
+---
+
+### 10.4 구현 우선순위
+
+| 항목 | 우선순위 | 난이도 | 비고 |
+|------|---------|--------|------|
+| 장단점 요약 텍스트 | High | Low | 정적 데이터, 즉시 구현 가능 |
+| 슬라이더 컨트롤 | High | Low | HTML range input, 추가 패키지 불필요 |
+| 예상 청크 수 계산 | Medium | Low | 단순 산술 계산 |
+| 동작 시각화 다이어그램 | Medium | Medium | ASCII/div 블록, CSS 필요 |
+| 실시간 미리보기 업데이트 | Low | Low | 계산 구현 후 자동 연동 |
+
+---
+
+### 10.5 수용 기준 (Acceptance Criteria)
+
+- AC-ENH-01: 선택된 전략 카드에 장단점 텍스트가 표시된다
+- AC-ENH-02: 파라미터 입력 시 슬라이더와 숫자 필드가 동기화된다
+- AC-ENH-03: `fileCharCount` prop이 있을 때 예상 청크 수가 표시된다
+- AC-ENH-04: 파라미터 변경 시 예상 청크 수가 즉시 업데이트된다
+- AC-ENH-05: 선택된 전략의 동작 방식 다이어그램이 표시된다
+- AC-ENH-06: 기존 `onChange` 동작과 하위 호환이 유지된다
+- AC-ENH-07: 모바일 화면(375px 이상)에서도 슬라이더가 정상 동작한다

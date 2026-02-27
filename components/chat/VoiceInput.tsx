@@ -90,11 +90,11 @@ export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) 
       title={voiceState === 'listening' ? '녹음 중지' : '음성 입력'}
       className={clsx(
         'relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-kimchi-red',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-kimchi-orange',
         {
-          'bg-gray-100 hover:bg-gray-200 text-gray-500': voiceState === 'idle' && !disabled,
+          'bg-kimchi-beige hover:bg-kimchi-beige-dark text-brand-text-secondary': voiceState === 'idle' && !disabled,
           'bg-kimchi-red text-white recording-pulse': voiceState === 'listening',
-          'bg-gray-100 text-gray-400 cursor-not-allowed': voiceState === 'processing' || disabled,
+          'bg-kimchi-beige text-brand-text-muted cursor-not-allowed': voiceState === 'processing' || disabled,
         }
       )}
     >

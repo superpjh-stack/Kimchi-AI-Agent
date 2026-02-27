@@ -95,26 +95,91 @@ class OpenAIEmbedder implements EmbeddingProvider {
 }
 
 // ──────────────────────────────────────────────
-// 팩토리 (싱글턴)
+// OllamaWithFallback — 인메모리 전용 (pgvector 사용 시 비활성)
+// Ollama 호출 실패 시 MockEmbedder로 자동 폴백
+// ──────────────────────────────────────────────
+
+class OllamaWithFallback implements EmbeddingProvider {
+  private readonly primary: EmbeddingProvider;
+  private readonly fallback: MockEmbedder;
+  private useFallback = false;
+
+  get dimension(): number {
+    return this.useFallback ? this.fallback.dimension : this.primary.dimension;
+  }
+  get name(): string {
+    return this.useFallback ? 'mock (ollama-fallback)' : 'local';
+  }
+
+  constructor() {
+    const { LocalEmbedder } = require('./embedder-local') as typeof import('./embedder-local');
+    this.primary = new LocalEmbedder();
+    this.fallback = new MockEmbedder();
+  }
+
+  async embed(text: string): Promise<number[]> {
+    if (this.useFallback) return this.fallback.embed(text);
+    try {
+      return await this.primary.embed(text);
+    } catch (err) {
+      console.warn('[embedder] Ollama 연결 실패, mock 폴백:', err instanceof Error ? err.message : err);
+      this.useFallback = true;
+      return this.fallback.embed(text);
+    }
+  }
+
+  async embedBatch(texts: string[]): Promise<number[][]> {
+    if (this.useFallback) return this.fallback.embedBatch(texts);
+    try {
+      return await this.primary.embedBatch(texts);
+    } catch (err) {
+      console.warn('[embedder] Ollama 연결 실패, mock 폴백:', err instanceof Error ? err.message : err);
+      this.useFallback = true;
+      return this.fallback.embedBatch(texts);
+    }
+  }
+}
+
+// ──────────────────────────────────────────────
+// 팩토리 (싱글턴) — 우선순위: OpenAI → Ollama → Mock
+// EMBEDDING_PROVIDER 미설정 시 자동 감지
 // ──────────────────────────────────────────────
 
 let _provider: EmbeddingProvider | null = null;
 
+/** OLLAMA_BASE_URL 또는 OLLAMA_URL이 설정되어 있는지 확인 */
+function isOllamaConfigured(): boolean {
+  return !!(process.env.OLLAMA_BASE_URL || process.env.OLLAMA_URL);
+}
+
 export function getEmbedder(): EmbeddingProvider {
   if (_provider) return _provider;
 
-  const mode = process.env.EMBEDDING_PROVIDER ?? 'openai';
+  const mode = process.env.EMBEDDING_PROVIDER; // undefined = 자동 감지
   const apiKey = process.env.OPENAI_API_KEY;
+  const usePgvector = !!process.env.DATABASE_URL;
 
+  // ── 명시적 선택 ──
   if (mode === 'local') {
-    // Lazy import to avoid loading Ollama deps when not needed
+    // pgvector 사용 시: Ollama 실패 → 에러 throw (차원 정합성 보장)
+    // 인메모리 사용 시: Ollama 실패 → Mock 폴백 허용
     const { LocalEmbedder } = require('./embedder-local') as typeof import('./embedder-local');
-    _provider = new LocalEmbedder();
+    _provider = usePgvector ? new LocalEmbedder() : new OllamaWithFallback();
   } else if (mode === 'openai' && apiKey) {
     _provider = new OpenAIEmbedder(apiKey);
+  } else if (mode === 'mock') {
+    _provider = new MockEmbedder();
+  }
+  // ── 자동 감지 (EMBEDDING_PROVIDER 미설정 또는 openai인데 키 없음) ──
+  else if (apiKey) {
+    _provider = new OpenAIEmbedder(apiKey);
+  } else if (isOllamaConfigured()) {
+    console.log('[embedder] OPENAI_API_KEY 없음 → Ollama 임베더 시도');
+    const { LocalEmbedder } = require('./embedder-local') as typeof import('./embedder-local');
+    _provider = usePgvector ? new LocalEmbedder() : new OllamaWithFallback();
   } else {
-    if (mode === 'openai' && !apiKey) {
-      console.warn('[embedder] OPENAI_API_KEY 없음 — mock embedding 사용');
+    if (mode === 'openai') {
+      console.warn('[embedder] OPENAI_API_KEY 없음, Ollama 미설정 → mock embedding 사용');
     }
     _provider = new MockEmbedder();
   }

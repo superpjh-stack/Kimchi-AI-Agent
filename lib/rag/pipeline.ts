@@ -2,7 +2,7 @@
 
 import { chunkText } from './chunker';
 import { embed, embedBatch } from './embedder';
-import { addDocuments, search, toDocumentSource, removeDocument, getChunkByKey } from './retriever';
+import { toDocumentSource, getVectorStore } from './retriever';
 import { bm25Index } from './bm25';
 import type { DocumentSource, ChunkingOptions } from '@/types';
 
@@ -40,9 +40,11 @@ function reciprocalRankFusion(rankedLists: string[][], k = 60): string[] {
  * 3. Reciprocal Rank Fusion → top 5
  */
 export async function retrieveContext(query: string): Promise<RAGResult> {
+  const store = await getVectorStore();
+
   // 1. 벡터 검색 (시맨틱) — threshold 낮춰서 후보 확대 후 RRF가 재정렬
   const queryVector = await embed(query);
-  const vectorResults = search(queryVector, { topK: 10, threshold: 0.3 });
+  const vectorResults = await store.search(queryVector, { topK: 10, threshold: 0.3 });
 
   // 2. BM25 키워드 검색 (어휘)
   const bm25Results = bm25Index.search(query, 10);
@@ -69,7 +71,7 @@ export async function retrieveContext(query: string): Promise<RAGResult> {
     }
 
     // 벡터 결과에 없으면 스토어에서 직접 조회 (BM25 전용 히트)
-    const stored = getChunkByKey(key);
+    const stored = await store.getChunkByKey(key);
     if (stored) {
       topChunks.push(toDocumentSource({ chunk: stored.chunk, score: 0 }));
     }
@@ -108,12 +110,13 @@ export async function ingestDocument(
   docName: string,
   chunkingOptions?: ChunkingOptions
 ): Promise<number> {
+  const store = await getVectorStore();
   const chunks = chunkText(text, docId, docName, chunkingOptions);
   if (chunks.length === 0) return 0;
 
   // 벡터 임베딩
   const vectors = await embedBatch(chunks.map((c) => c.text));
-  addDocuments(chunks, vectors);
+  await store.addDocuments(chunks, vectors);
 
   // BM25 인덱싱
   for (const chunk of chunks) {
@@ -131,7 +134,8 @@ export async function ingestDocument(
 /**
  * Remove a document from both vector store and BM25 index.
  */
-export function removeDocumentFull(docId: string): void {
-  removeDocument(docId);
+export async function removeDocumentFull(docId: string): Promise<void> {
+  const store = await getVectorStore();
+  await store.removeDocument(docId);
   bm25Index.remove(docId);
 }

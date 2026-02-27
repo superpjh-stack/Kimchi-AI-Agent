@@ -11,7 +11,9 @@ interface ChatMessage {
 
 export function createOpenAISSEStream(
   messages: ChatMessage[],
-  sources?: DocumentSource[]
+  sources?: DocumentSource[],
+  onComplete?: (fullText: string) => Promise<void>,
+  conversationId?: string
 ): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
 
@@ -21,6 +23,8 @@ export function createOpenAISSEStream(
 
   return new ReadableStream<Uint8Array>({
     async start(controller) {
+      let fullText = '';
+
       try {
         const res = await fetch(OPENAI_CHAT_URL, {
           method: 'POST',
@@ -58,7 +62,10 @@ export function createOpenAISSEStream(
 
             const payload = trimmed.slice(6);
             if (payload === '[DONE]') {
-              // 스트리밍 종료
+              // 스트리밍 완료 — onComplete 콜백 호출 후 SSE done 전송
+              if (onComplete) {
+                await onComplete(fullText).catch(console.error);
+              }
               if (sources && sources.length > 0) {
                 controller.enqueue(
                   sse({
@@ -69,7 +76,11 @@ export function createOpenAISSEStream(
                 );
               }
               controller.enqueue(
-                sse({ type: 'done', messageId: `msg_${Date.now()}`, conversationId: '' })
+                sse({
+                  type: 'done',
+                  messageId: `msg_${crypto.randomUUID()}`,
+                  conversationId: conversationId ?? '',
+                })
               );
               continue;
             }
@@ -78,6 +89,7 @@ export function createOpenAISSEStream(
               const chunk = JSON.parse(payload);
               const token: string = chunk.choices?.[0]?.delta?.content ?? '';
               if (token) {
+                fullText += token;
                 controller.enqueue(sse({ type: 'token', content: token }));
               }
             } catch {

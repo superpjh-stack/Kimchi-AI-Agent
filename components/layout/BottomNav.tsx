@@ -1,9 +1,9 @@
 'use client';
 
-import { MessageSquare, List, FileText, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, List, FileText, HelpCircle } from 'lucide-react';
 import clsx from 'clsx';
 
-type TabId = 'chat' | 'conversations' | 'documents' | 'questions';
+export type TabId = 'dashboard' | 'chat' | 'conversations' | 'documents' | 'questions';
 
 interface BottomNavProps {
   activeTab?: TabId;
@@ -13,6 +13,7 @@ interface BottomNavProps {
 }
 
 const NAV_ITEMS = [
+  { id: 'dashboard' as const, label: '대시보드', Icon: LayoutDashboard },
   { id: 'chat' as const, label: '채팅', Icon: MessageSquare },
   { id: 'conversations' as const, label: '대화목록', Icon: List },
   { id: 'documents' as const, label: '문서', Icon: FileText },
@@ -32,7 +33,7 @@ export default function BottomNav({
   };
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 safe-area-bottom">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-kimchi-beige-dark safe-area-bottom">
       <div className="flex items-center justify-around h-14">
         {NAV_ITEMS.map(({ id, label, Icon }) => (
           <button
@@ -45,7 +46,7 @@ export default function BottomNav({
               'transition-colors duration-150',
               activeTab === id
                 ? id === 'questions' ? 'text-kimchi-green' : 'text-kimchi-red'
-                : 'text-gray-500 hover:text-gray-700'
+                : 'text-brand-text-muted hover:text-brand-text-secondary'
             )}
             aria-label={label}
           >

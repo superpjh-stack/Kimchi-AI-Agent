@@ -10,11 +10,13 @@ const POLL_INTERVAL = parseInt(process.env.SENSOR_POLL_INTERVAL ?? '30000', 10);
 export async function GET(): Promise<Response> {
   const client = createSensorClient();
   const encoder = new TextEncoder();
+  let intervalId: ReturnType<typeof setInterval> | undefined;
+  let cancelled = false;
 
   const stream = new ReadableStream({
     async start(controller) {
-      // 연결 즉시 현재 상태 1회 전송
       const send = async () => {
+        if (cancelled) return;
         try {
           const data = await client.getCurrentData();
           const alerts = checkAlerts(data);
@@ -28,16 +30,21 @@ export async function GET(): Promise<Response> {
             controller.enqueue(encoder.encode(`data: ${hb}\n\n`));
           }
         } catch {
-          const errPayload = JSON.stringify({ type: 'error', message: '센서 데이터 조회 실패' });
-          controller.enqueue(encoder.encode(`data: ${errPayload}\n\n`));
+          if (!cancelled) {
+            try {
+              const errPayload = JSON.stringify({ type: 'error', message: '센서 데이터 조회 실패' });
+              controller.enqueue(encoder.encode(`data: ${errPayload}\n\n`));
+            } catch { /* controller already closed */ }
+          }
         }
       };
 
       await send();
-      const id = setInterval(send, POLL_INTERVAL);
-
-      // 스트림 종료 시 인터벌 정리
-      return () => clearInterval(id);
+      intervalId = setInterval(send, POLL_INTERVAL);
+    },
+    cancel() {
+      cancelled = true;
+      clearInterval(intervalId);
     },
   });
 
