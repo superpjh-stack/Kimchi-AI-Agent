@@ -1,5 +1,8 @@
-// Sentry 클라이언트 설정 — 브라우저 에러 추적
+// Next.js App Router instrumentation — Sentry 클라이언트 초기화
+// https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
 import * as Sentry from '@sentry/nextjs';
+
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
