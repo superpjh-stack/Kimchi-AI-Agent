@@ -4,6 +4,7 @@
 |---------|:----------:|-----------|----------|------|
 | kimchi-agent-phase2 | 92.2% | 2026-02-27 | 2026-02-27 | `docs/archive/2026-02/kimchi-agent-phase2/` |
 | kimchi-agent-phase3 | 91.0% | 2026-02-28 | 2026-02-28 | `docs/archive/2026-02/kimchi-agent-phase3/` |
+| kimchi-agent-phase4 | 93.9% | 2026-02-28 | 2026-02-28 | `docs/archive/2026-02/kimchi-agent-phase4/` |
 
 ## kimchi-agent-phase2
 
@@ -22,3 +23,12 @@
 - **Report**: `kimchi-agent-phase3.report.md`
 
 **Summary**: Kimchi-Agent Phase 3 — pgvector 영속성, LocalEmbedder(Ollama) 3-way 팩토리, ML 예측(RuleBasedPredictor/RemotePredictor), Recharts 실시간 센서 차트 대시보드 구현. 5 Sprint, 35+ 파일, Match Rate 91.0%.
+
+## kimchi-agent-phase4
+
+- **Plan**: `kimchi-agent-phase4.plan.md`
+- **Design**: `kimchi-agent-phase4.design.md`
+- **Analysis**: `kimchi-agent-phase4.analysis.md`
+- **Report**: `kimchi-agent-phase4.report.md`
+
+**Summary**: Kimchi-Agent Phase 4 — Vercel 프로덕션 배포, Jest 61 tests + GitHub Actions CI/CD, 베타 테스트 전략, ML 예측 캐싱(TTL 30s) + Sentry 에러 모니터링 + Vercel Analytics. 4 Sprint, 1회 이터레이션(85.7%→93.9%), Match Rate 93.9%.
