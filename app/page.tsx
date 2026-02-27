@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
+import type { TabId } from '@/components/layout/BottomNav';
 import ChatWindow from '@/components/chat/ChatWindow';
 import DocumentUpload from '@/components/documents/DocumentUpload';
 import DocumentList from '@/components/documents/DocumentList';
-import ProcessStatusPanel from '@/components/process/ProcessStatusPanel';
+import DashboardPanel from '@/components/dashboard/DashboardPanel';
 import QuestionPanel from '@/components/questions/QuestionPanel';
 import { useChat } from '@/hooks/useChat';
 import { useConversations } from '@/hooks/useConversations';
@@ -15,19 +16,29 @@ import { useAlerts } from '@/hooks/useAlerts';
 
 export default function HomePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [bottomTab, setBottomTab] = useState<'chat' | 'conversations' | 'documents' | 'questions'>('chat');
+  const [bottomTab, setBottomTab] = useState<TabId>('dashboard');
   const [questionPanelOpen, setQuestionPanelOpen] = useState(false);
 
   const {
     conversations,
     activeId,
     setActiveId,
+    refresh: refreshConversations,
   } = useConversations();
 
-  const { messages, isStreaming, sendMessage, clearMessages } = useChat(
+  const { messages, isStreaming, chatStatus, sendMessage, clearMessages } = useChat(
     activeId ?? undefined
   );
   const { criticalCount, warningCount } = useAlerts();
+
+  // 스트리밍 완료 시 대화 목록 갱신 (새 대화가 사이드바에 반영)
+  const prevIsStreaming = useRef(false);
+  useEffect(() => {
+    if (prevIsStreaming.current && !isStreaming) {
+      refreshConversations();
+    }
+    prevIsStreaming.current = isStreaming;
+  }, [isStreaming, refreshConversations]);
 
   const handleNewChat = () => {
     clearMessages();
@@ -53,7 +64,7 @@ export default function HomePage() {
   const headerTitle = activeConversation?.title ?? '새 대화';
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-kimchi-cream">
       {/* Sidebar */}
       <Sidebar
         conversations={conversations}
@@ -73,31 +84,35 @@ export default function HomePage() {
           onMenuToggle={() => setSidebarOpen(true)}
           questionPanelOpen={questionPanelOpen}
           onQuestionPanelToggle={() => setQuestionPanelOpen((v) => !v)}
+          activeTab={bottomTab}
+          onTabChange={setBottomTab}
         />
 
         {/* Main area + right panel row */}
         <div className="flex flex-1 overflow-hidden">
           {/* Main area — on mobile, add bottom padding for BottomNav */}
           <main className="flex-1 overflow-hidden pb-14 lg:pb-0 min-w-0">
-            {bottomTab === 'documents' ? (
+            {bottomTab === 'dashboard' ? (
+              <DashboardPanel />
+            ) : bottomTab === 'documents' ? (
               <div className="h-full overflow-y-auto">
                 <div className="max-w-xl mx-auto px-4 py-6">
-                  <h2 className="text-base font-semibold text-gray-800 mb-4">문서 관리</h2>
+                  <h2 className="text-base font-semibold text-brand-text-primary mb-4 flex items-center gap-2">
+                    <span>📄</span> 문서 관리
+                  </h2>
                   <DocumentUpload />
                   <DocumentList />
                 </div>
               </div>
             ) : (
               <div className="flex flex-col h-full overflow-hidden">
-                <ProcessStatusPanel />
-                <div className="flex-1 overflow-hidden">
-                  <ChatWindow
-                    messages={messages}
-                    isStreaming={isStreaming}
-                    onSend={sendMessage}
-                    conversationId={activeId ?? undefined}
-                  />
-                </div>
+                <ChatWindow
+                  messages={messages}
+                  isStreaming={isStreaming}
+                  chatStatus={chatStatus}
+                  onSend={sendMessage}
+                  conversationId={activeId ?? undefined}
+                />
               </div>
             )}
           </main>
@@ -107,7 +122,7 @@ export default function HomePage() {
             isOpen={questionPanelOpen || bottomTab === 'questions'}
             onClose={() => {
               setQuestionPanelOpen(false);
-              if (bottomTab === 'questions') setBottomTab('chat');
+              if (bottomTab === 'questions') setBottomTab('dashboard');
             }}
             onSelectQuestion={handleSelectQuestion}
           />

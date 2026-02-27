@@ -1,104 +1,111 @@
-// Phase 3: pgvector 기반 VectorStore 구현
-// DATABASE_URL 환경변수 필요 — docker-compose.yml의 postgres 서비스 참조
-
+// lib/rag/retriever-pg.ts — pgvector 백엔드 VectorStore 구현
+import { Pool } from 'pg';
 import type { Chunk } from './chunker';
-import type { SearchResult, DocumentStats, VectorStore } from './retriever';
+import type { StoredEntry, SearchResult, VectorStore, DocumentStats } from './retriever';
 
-/**
- * pgvector VectorStore — PostgreSQL + pgvector 확장 사용.
- *
- * 테이블 스키마 (최초 실행 시 자동 생성):
- *   CREATE EXTENSION IF NOT EXISTS vector;
- *   CREATE TABLE IF NOT EXISTS embeddings (
- *     key        TEXT PRIMARY KEY,
- *     doc_id     TEXT NOT NULL,
- *     doc_name   TEXT NOT NULL,
- *     chunk_text TEXT NOT NULL,
- *     chunk_idx  INTEGER NOT NULL,
- *     vector     vector(N),              -- dimension은 embedder에 따라 다름
- *     created_at TIMESTAMPTZ DEFAULT NOW()
- *   );
- *   CREATE INDEX ON embeddings USING ivfflat (vector vector_cosine_ops) WITH (lists = 100);
- */
 export class PgVectorStore implements VectorStore {
   readonly storageType = 'pgvector' as const;
-  private readonly databaseUrl: string;
+  private readonly pool: Pool;
   private readonly dimension: number;
-  private initialized = false;
+  private _initPromise: Promise<void> | null = null;
 
-  constructor(dimension: number) {
-    const url = process.env.DATABASE_URL;
-    if (!url) {
-      throw new Error('DATABASE_URL is required for pgvector store');
-    }
-    this.databaseUrl = url;
+  constructor(connectionString: string, dimension = 1536) {
+    this.pool = new Pool({ connectionString });
     this.dimension = dimension;
   }
 
-  /**
-   * Initialize the database schema.
-   * Uses parameterized queries only — no string interpolation for SQL.
-   */
-  async init(): Promise<void> {
-    if (this.initialized) return;
-
-    // Dynamic import to avoid bundling pg when not used
-    const { Pool } = await import('pg');
-    const pool = new Pool({ connectionString: this.databaseUrl });
-
-    try {
-      await pool.query('CREATE EXTENSION IF NOT EXISTS vector');
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS embeddings (
-          key        TEXT PRIMARY KEY,
-          doc_id     TEXT NOT NULL,
-          doc_name   TEXT NOT NULL,
-          chunk_text TEXT NOT NULL,
-          chunk_idx  INTEGER NOT NULL,
-          vector     vector($1),
-          created_at TIMESTAMPTZ DEFAULT NOW()
-        )
-      `, [this.dimension]);
-
-      // Index for cosine similarity search
-      // Note: ivfflat requires data to exist; create after first ingest in production
-      this.initialized = true;
-      console.log(`[retriever-pg] initialized (dimension=${this.dimension})`);
-    } finally {
-      await pool.end();
-    }
+  async initialize(): Promise<void> {
+    if (this._initPromise) return this._initPromise;
+    this._initPromise = this._setup();
+    return this._initPromise;
   }
 
-  private async getPool() {
-    const { Pool } = await import('pg');
-    return new Pool({ connectionString: this.databaseUrl });
+  private async _setup(): Promise<void> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('CREATE EXTENSION IF NOT EXISTS vector');
+
+      // 기존 테이블의 vector 컬럼 차원 확인 — 불일치 시 DROP 후 재생성
+      const dimCheck = await client.query(`
+        SELECT atttypmod FROM pg_attribute
+        WHERE attrelid = 'document_chunks'::regclass
+          AND attname = 'vector'
+      `);
+
+      if (dimCheck.rows.length > 0) {
+        const storedDim = dimCheck.rows[0].atttypmod;
+        if (storedDim !== -1 && storedDim !== this.dimension) {
+          const countResult = await client.query('SELECT COUNT(*) FROM document_chunks');
+          const lostChunks = parseInt(countResult.rows[0].count, 10);
+          console.warn(
+            `[pgvector] 차원 불일치 감지: DB=${storedDim} vs embedder=${this.dimension} — 테이블 재생성`
+          );
+          if (lostChunks > 0) {
+            console.warn(`[pgvector] ${lostChunks}개 청크 삭제됨 — 문서 재업로드 필요`);
+          }
+          await client.query('DROP TABLE document_chunks');
+        }
+      }
+
+      // 테이블 생성 (없거나 방금 DROP한 경우)
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS document_chunks (
+          key         TEXT PRIMARY KEY,
+          doc_id      TEXT NOT NULL,
+          doc_name    TEXT NOT NULL,
+          chunk_index INTEGER NOT NULL,
+          text        TEXT NOT NULL,
+          vector      vector(${this.dimension}) NOT NULL,
+          metadata    JSONB DEFAULT '{}'
+        )
+      `);
+      await client.query(
+        'CREATE INDEX IF NOT EXISTS document_chunks_doc_id_idx ON document_chunks (doc_id)'
+      );
+
+      // IVFFlat 인덱스 — 100건 이상일 때만 효과적
+      const countResult = await client.query('SELECT COUNT(*) FROM document_chunks');
+      const count = parseInt(countResult.rows[0].count, 10);
+      if (count >= 100) {
+        try {
+          await client.query(`
+            CREATE INDEX IF NOT EXISTS document_chunks_vector_idx
+            ON document_chunks USING ivfflat (vector vector_cosine_ops)
+            WITH (lists = 100)
+          `);
+        } catch {
+          console.warn('[pgvector] IVFFlat 인덱스 생성 스킵 (데이터 부족)');
+        }
+      }
+
+      console.log(`[pgvector] 초기화 완료 (dimension=${this.dimension}, chunks=${count})`);
+    } finally {
+      client.release();
+    }
   }
 
   async addDocuments(chunks: Chunk[], vectors: number[][]): Promise<void> {
-    if (chunks.length !== vectors.length) {
-      throw new Error('chunks and vectors arrays must have the same length');
-    }
-
-    await this.init();
-    const pool = await this.getPool();
-
+    await this.initialize();
+    const client = await this.pool.connect();
     try {
+      await client.query('BEGIN');
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
         const key = `${chunk.metadata.docId}::${chunk.index}`;
-        const vecStr = `[${vectors[i].join(',')}]`;
-
-        await pool.query(
-          `INSERT INTO embeddings (key, doc_id, doc_name, chunk_text, chunk_idx, vector)
-           VALUES ($1, $2, $3, $4, $5, $6)
-           ON CONFLICT (key) DO UPDATE SET
-             chunk_text = EXCLUDED.chunk_text,
-             vector = EXCLUDED.vector`,
-          [key, chunk.metadata.docId, chunk.metadata.docName, chunk.text, chunk.index, vecStr]
+        const vectorStr = `[${vectors[i].join(',')}]`;
+        await client.query(
+          `INSERT INTO document_chunks (key, doc_id, doc_name, chunk_index, text, vector)
+           VALUES ($1, $2, $3, $4, $5, $6::vector)
+           ON CONFLICT (key) DO UPDATE SET text = EXCLUDED.text, vector = EXCLUDED.vector`,
+          [key, chunk.metadata.docId, chunk.metadata.docName, chunk.index, chunk.text, vectorStr]
         );
       }
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
     } finally {
-      await pool.end();
+      client.release();
     }
   }
 
@@ -106,123 +113,75 @@ export class PgVectorStore implements VectorStore {
     queryVector: number[],
     options: { topK?: number; threshold?: number } = {}
   ): Promise<SearchResult[]> {
+    await this.initialize();
     const topK = options.topK ?? 5;
     const threshold = options.threshold ?? 0.3;
-
-    await this.init();
-    const pool = await this.getPool();
-
-    try {
-      const vecStr = `[${queryVector.join(',')}]`;
-
-      // pgvector cosine distance: 1 - cosine_similarity
-      // So we want distance < (1 - threshold)
-      const maxDistance = 1 - threshold;
-
-      const result = await pool.query(
-        `SELECT key, doc_id, doc_name, chunk_text, chunk_idx,
-                1 - (vector <=> $1::vector) AS score
-         FROM embeddings
-         WHERE 1 - (vector <=> $1::vector) >= $2
-         ORDER BY vector <=> $1::vector
-         LIMIT $3`,
-        [vecStr, threshold, topK]
-      );
-
-      return result.rows.map((row: { doc_id: string; doc_name: string; chunk_text: string; chunk_idx: number; score: number }) => ({
-        chunk: {
-          text: row.chunk_text,
-          index: row.chunk_idx,
-          metadata: { docId: row.doc_id, docName: row.doc_name },
-        },
-        score: parseFloat(String(row.score)),
-      }));
-    } finally {
-      await pool.end();
-    }
+    const vectorStr = `[${queryVector.join(',')}]`;
+    const { rows } = await this.pool.query(
+      `SELECT key, doc_id, doc_name, chunk_index, text,
+              1 - (vector <=> $1::vector) AS score
+       FROM document_chunks
+       WHERE 1 - (vector <=> $1::vector) >= $2
+       ORDER BY vector <=> $1::vector
+       LIMIT $3`,
+      [vectorStr, threshold, topK]
+    );
+    return rows.map((row) => ({
+      chunk: {
+        text: row.text,
+        index: row.chunk_index,
+        metadata: { docId: row.doc_id, docName: row.doc_name },
+      },
+      score: parseFloat(row.score),
+    }));
   }
 
   async removeDocument(docId: string): Promise<void> {
-    await this.init();
-    const pool = await this.getPool();
-
-    try {
-      await pool.query('DELETE FROM embeddings WHERE doc_id = $1', [docId]);
-    } finally {
-      await pool.end();
-    }
+    await this.initialize();
+    await this.pool.query('DELETE FROM document_chunks WHERE doc_id = $1', [docId]);
   }
 
   async getStoreSize(): Promise<number> {
-    await this.init();
-    const pool = await this.getPool();
-
-    try {
-      const result = await pool.query('SELECT COUNT(*)::int AS count FROM embeddings');
-      return result.rows[0].count;
-    } finally {
-      await pool.end();
-    }
+    await this.initialize();
+    const { rows } = await this.pool.query('SELECT COUNT(*) AS cnt FROM document_chunks');
+    return parseInt(rows[0].cnt, 10);
   }
 
-  async getChunkByKey(key: string): Promise<{ vector: number[]; chunk: Chunk } | undefined> {
-    await this.init();
-    const pool = await this.getPool();
-
-    try {
-      const result = await pool.query(
-        'SELECT doc_id, doc_name, chunk_text, chunk_idx FROM embeddings WHERE key = $1',
-        [key]
-      );
-
-      if (result.rows.length === 0) return undefined;
-
-      const row = result.rows[0] as { doc_id: string; doc_name: string; chunk_text: string; chunk_idx: number };
-      return {
-        vector: [], // Vector not returned for key lookup to save memory
-        chunk: {
-          text: row.chunk_text,
-          index: row.chunk_idx,
-          metadata: { docId: row.doc_id, docName: row.doc_name },
-        },
-      };
-    } finally {
-      await pool.end();
-    }
+  async getChunkByKey(key: string): Promise<StoredEntry | undefined> {
+    await this.initialize();
+    const { rows } = await this.pool.query(
+      'SELECT text, chunk_index, doc_id, doc_name FROM document_chunks WHERE key = $1',
+      [key]
+    );
+    if (rows.length === 0) return undefined;
+    const row = rows[0];
+    return {
+      vector: [],
+      chunk: {
+        text: row.text,
+        index: row.chunk_index,
+        metadata: { docId: row.doc_id, docName: row.doc_name },
+      },
+    };
   }
 
   async getDocumentStats(): Promise<DocumentStats> {
-    await this.init();
-    const pool = await this.getPool();
-
-    try {
-      const totalResult = await pool.query(
-        'SELECT COUNT(DISTINCT doc_id)::int AS total FROM embeddings'
-      );
-      const chunksResult = await pool.query(
-        'SELECT COUNT(*)::int AS count FROM embeddings'
-      );
-      const typeResult = await pool.query(
-        `SELECT
-           LOWER(SUBSTRING(doc_name FROM '\\.([^.]+)$')) AS ext,
-           COUNT(DISTINCT doc_id)::int AS count
-         FROM embeddings
-         GROUP BY ext`
-      );
-
-      const byType: Record<string, number> = {};
-      for (const row of typeResult.rows as Array<{ ext: string; count: number }>) {
-        byType[row.ext ?? 'unknown'] = row.count;
-      }
-
-      return {
-        total: totalResult.rows[0].total,
-        byType,
-        totalChunks: chunksResult.rows[0].count,
-        storageType: 'pgvector',
-      };
-    } finally {
-      await pool.end();
+    await this.initialize();
+    const { rows } = await this.pool.query(`
+      SELECT doc_name, COUNT(*) AS chunk_count
+      FROM document_chunks
+      GROUP BY doc_id, doc_name
+    `);
+    const byType: Record<string, number> = {};
+    for (const row of rows) {
+      const ext = (row.doc_name.split('.').pop() ?? 'unknown').toLowerCase();
+      byType[ext] = (byType[ext] ?? 0) + 1;
     }
+    return {
+      total: rows.length,
+      byType,
+      totalChunks: rows.reduce((acc, r) => acc + parseInt(r.chunk_count, 10), 0),
+      storageType: 'pgvector',
+    };
   }
 }

@@ -119,3 +119,6 @@ data: {"type":"error","message":"..."}
 - Analysis: `docs/03-analysis/kimchi-agent.analysis.md` (Match Rate: 97.4%)
 - Phase 2 Design: `docs/02-design/features/kimchi-agent-phase2.design.md`
 - Phase 2 Analysis: `docs/03-analysis/kimchi-agent-phase2.analysis.md` (Match Rate: 92.2%)
+- Phase 3 Plan: `docs/01-plan/features/kimchi-agent-phase3.plan.md`
+- Phase 3 Design: `docs/02-design/features/kimchi-agent-phase3.design.md`
+- Phase 3 Analysis: `docs/03-analysis/kimchi-agent-phase3.analysis.md` (Match Rate: 91.0%)

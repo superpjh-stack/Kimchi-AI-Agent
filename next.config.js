@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { withSentryConfig } = require('@sentry/nextjs');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -27,4 +30,9 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withSentryConfig(nextConfig, {
+  // 소스맵 업로드 (프로덕션 배포 시 SENTRY_AUTH_TOKEN 필요)
+  silent: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+});

@@ -1,0 +1,21 @@
+// Sentry 클라이언트 설정 — 브라우저 에러 추적
+import * as Sentry from '@sentry/nextjs';
+
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 0.1,
+  replaysSessionSampleRate: 0.05,
+  replaysOnErrorSampleRate: 1.0,
+  enabled: process.env.NODE_ENV === 'production',
+  integrations: [
+    Sentry.replayIntegration(),
+  ],
+  // PII 필터 — 이메일, IP 제거
+  beforeSend(event) {
+    if (event.user) {
+      delete event.user.email;
+      delete event.user.ip_address;
+    }
+    return event;
+  },
+});

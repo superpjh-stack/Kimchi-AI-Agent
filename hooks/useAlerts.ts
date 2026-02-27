@@ -33,5 +33,13 @@ export function useAlerts() {
   const criticalCount = alerts.filter((a) => a.severity === 'critical').length;
   const warningCount = alerts.filter((a) => a.severity === 'warning').length;
 
-  return { alerts, criticalCount, warningCount, connected };
+  const acknowledgeAlert = async (id: string) => {
+    await fetch(`/api/alerts/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ acknowledged: true }),
+    });
+  };
+
+  return { alerts, criticalCount, warningCount, connected, acknowledgeAlert };
 }

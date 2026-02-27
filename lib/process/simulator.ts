@@ -37,7 +37,7 @@ export class SimulatorClient implements SensorClient {
       timestamp:            new Date().toISOString(),
     };
 
-    // 이력에 추가 (최대 200개 유지)
+    // 이력에 추가 (최대 2880개 유지 — 30s 간격 24h)
     this.history.push({
       temperature: data.temperature,
       humidity:    data.humidity,
@@ -45,7 +45,7 @@ export class SimulatorClient implements SensorClient {
       ph:          data.ph,
       timestamp:   data.timestamp,
     });
-    if (this.history.length > 200) this.history.shift();
+    if (this.history.length > 2880) this.history.shift();
 
     return data;
   }

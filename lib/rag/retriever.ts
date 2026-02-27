@@ -2,6 +2,7 @@
 
 import type { Chunk } from './chunker';
 import type { DocumentSource } from '@/types';
+import { getEmbedder } from './embedder';
 
 export interface StoredEntry {
   vector: number[];
@@ -161,4 +162,74 @@ export function getDocumentStats(): DocumentStats {
     totalChunks: vectorStore.size,
     storageType: 'memory',
   };
+}
+
+// ──────────────────────────────────────────────
+// InMemoryVectorStore — 기존 모듈 레벨 함수 래핑
+// ──────────────────────────────────────────────
+
+export class InMemoryVectorStore implements VectorStore {
+  readonly storageType = 'memory' as const;
+
+  addDocuments(chunks: Chunk[], vectors: number[][]): void {
+    addDocuments(chunks, vectors);
+  }
+
+  search(queryVector: number[], options?: { topK?: number; threshold?: number }): SearchResult[] {
+    return search(queryVector, options);
+  }
+
+  removeDocument(docId: string): void {
+    removeDocument(docId);
+  }
+
+  getStoreSize(): number {
+    return getStoreSize();
+  }
+
+  getChunkByKey(key: string): StoredEntry | undefined {
+    return getChunkByKey(key);
+  }
+
+  getDocumentStats(): DocumentStats {
+    return getDocumentStats();
+  }
+}
+
+// ──────────────────────────────────────────────
+// getVectorStore() — 환경 변수 기반 싱글톤 팩토리
+// DATABASE_URL 설정 시 pgvector, 미설정 시 인메모리
+// ──────────────────────────────────────────────
+
+let _storeInstance: VectorStore | null = null;
+let _storeInitPromise: Promise<VectorStore> | null = null;
+
+export async function getVectorStore(): Promise<VectorStore> {
+  if (_storeInstance) return _storeInstance;
+  if (_storeInitPromise) return _storeInitPromise;
+
+  _storeInitPromise = (async (): Promise<VectorStore> => {
+    const dbUrl = process.env.DATABASE_URL;
+    if (dbUrl) {
+      try {
+        const { PgVectorStore } = await import('./retriever-pg');
+        const embedder = getEmbedder();
+        const store = new PgVectorStore(dbUrl, embedder.dimension);
+        await store.initialize();
+        _storeInstance = store;
+        console.log(`[VectorStore] pgvector (dimension=${embedder.dimension}, embedder=${embedder.name})`);
+      } catch (err) {
+        // Docker 미실행 등 연결 실패 시 인메모리로 폴백
+        console.warn('[VectorStore] pgvector 연결 실패, 인메모리로 폴백:', err instanceof Error ? err.message : err);
+        _storeInstance = new InMemoryVectorStore();
+        console.log('[VectorStore] Using in-memory backend (fallback)');
+      }
+    } else {
+      _storeInstance = new InMemoryVectorStore();
+      console.log('[VectorStore] Using in-memory backend');
+    }
+    return _storeInstance!;
+  })();
+
+  return _storeInitPromise;
 }
