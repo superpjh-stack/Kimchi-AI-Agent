@@ -1,0 +1,233 @@
+{
+  "version": "2.0",
+  "lastUpdated": "2026-02-27T13:21:19.213Z",
+  "activeFeatures": [
+    "questions",
+    "layout",
+    "Kimchi-Agent",
+    "rag",
+    "stats",
+    "[id]",
+    "process"
+  ],
+  "primaryFeature": "questions",
+  "features": {
+    "questions": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-02-27T12:14:33.088Z",
+        "lastUpdated": "2026-02-27T12:16:40.359Z"
+      },
+      "lastFile": "C:/gerardo/01 SmallSF/Kimchi-Agent/components/questions/QuestionPanel.tsx"
+    },
+    "layout": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-02-27T12:14:53.233Z",
+        "lastUpdated": "2026-02-27T12:15:13.445Z"
+      },
+      "lastFile": "C:/gerardo/01 SmallSF/Kimchi-Agent/components/layout/BottomNav.tsx"
+    },
+    "Kimchi-Agent": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-02-27T12:15:23.172Z",
+        "lastUpdated": "2026-02-27T12:16:58.883Z"
+      },
+      "lastFile": "C:/gerardo/01 SmallSF/Kimchi-Agent/app/page.tsx"
+    },
+    "rag": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-02-27T13:18:23.689Z",
+        "lastUpdated": "2026-02-27T13:21:19.213Z"
+      },
+      "lastFile": "C:/gerardo/01 SmallSF/Kimchi-Agent/lib/rag/retriever.ts"
+    },
+    "stats": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-02-27T13:18:25.188Z",
+        "lastUpdated": "2026-02-27T13:19:22.443Z"
+      },
+      "lastFile": "C:/gerardo/01 SmallSF/Kimchi-Agent/app/api/documents/stats/route.ts"
+    },
+    "[id]": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-02-27T13:21:02.441Z",
+        "lastUpdated": "2026-02-27T13:21:02.441Z"
+      },
+      "lastFile": "C:/gerardo/01 SmallSF/Kimchi-Agent/app/api/alerts/[id]/route.ts"
+    },
+    "process": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-02-27T13:21:09.361Z",
+        "lastUpdated": "2026-02-27T13:21:09.361Z"
+      },
+      "lastFile": "C:/gerardo/01 SmallSF/Kimchi-Agent/lib/process/alert-store.ts"
+    }
+  },
+  "pipeline": {
+    "currentPhase": 1,
+    "level": "Dynamic",
+    "phaseHistory": []
+  },
+  "session": {
+    "startedAt": "2026-02-27T12:14:33.087Z",
+    "onboardingCompleted": false,
+    "lastActivity": "2026-02-27T13:21:19.213Z"
+  },
+  "history": [
+    {
+      "timestamp": "2026-02-27T12:14:33.088Z",
+      "feature": "questions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T12:14:53.233Z",
+      "feature": "layout",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T12:15:03.376Z",
+      "feature": "layout",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T12:15:13.445Z",
+      "feature": "layout",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T12:15:23.172Z",
+      "feature": "Kimchi-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T12:15:43.894Z",
+      "feature": "Kimchi-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T12:16:40.359Z",
+      "feature": "questions",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T12:16:58.883Z",
+      "feature": "Kimchi-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T13:18:23.689Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T13:18:25.188Z",
+      "feature": "stats",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T13:18:52.467Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T13:18:58.937Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T13:19:04.624Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T13:19:14.207Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T13:19:22.443Z",
+      "feature": "stats",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T13:20:57.607Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T13:21:02.441Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T13:21:09.361Z",
+      "feature": "process",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-27T13:21:19.213Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    }
+  ]
+}
