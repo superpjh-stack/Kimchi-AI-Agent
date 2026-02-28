@@ -114,13 +114,22 @@ data: {"type":"error","message":"..."}
 
 ## PDCA Status
 
-- Plan: `docs/01-plan/features/kimchi-agent.plan.md`
-- Design: `docs/02-design/features/kimchi-agent.design.md`
-- Analysis: `docs/03-analysis/kimchi-agent.analysis.md` (Match Rate: 97.4%)
-- Phase 2 Design: `docs/02-design/features/kimchi-agent-phase2.design.md`
-- Phase 2 Analysis: `docs/03-analysis/kimchi-agent-phase2.analysis.md` (Match Rate: 92.2%)
-- Phase 3 Plan: `docs/01-plan/features/kimchi-agent-phase3.plan.md`
-- Phase 3 Design: `docs/02-design/features/kimchi-agent-phase3.design.md`
-- Phase 3 Analysis: `docs/03-analysis/kimchi-agent-phase3.analysis.md` (Match Rate: 91.0%)
-- Mascot Plan: `docs/01-plan/features/kimchi-mascot.plan.md`
-- Mascot Design: `docs/02-design/features/kimchi-mascot.design.md`
+### 완료된 Phase (아카이브)
+- Phase 1+2: `docs/archive/2026-02/kimchi-agent-phase2/` (Match Rate: 97.4% / 92.2%)
+- Phase 3: `docs/archive/2026-02/kimchi-agent-phase3/` (Match Rate: 91.0%)
+- Phase 4: `docs/archive/2026-02/kimchi-agent-phase4/` (Match Rate: 93.9%)
+- Phase 5: `docs/archive/2026-02/kimchi-agent-phase5/` (Match Rate: 98.2%)
+- 김치군 마스코트: `docs/archive/2026-02/kimchi-mascot/` (Match Rate: 97.0%)
+
+### 현재 진행 중
+- Phase 6 Plan: `docs/01-plan/features/kimchi-agent-phase6.plan.md` (v1.3, 2026-02-28)
+  - Sprint 1: 보안강화 (API 인증/RBAC, xlsx→exceljs, CSP nonce) — OWASP 2 Critical 해결
+  - Sprint 2: 테스트 (Jest 80%+, Playwright E2E) + Vercel 배포 + Questions 패널 통합
+  - Sprint 3: ML A/B 테스트 프레임워크
+  - Sprint 4: Multi-tenant 기반 구조
+
+### 주의사항 (Phase 6)
+- **보안**: API 인증 전무 (17개 엔드포인트) — Sprint 1 최우선
+- **xlsx 취약점**: Critical Prototype Pollution → exceljs 교체
+- **Questions 패널**: `components/questions/QuestionPanel.tsx` 완성, page.tsx 통합 필요
+- **커밋 대기**: master에서 origin/master 2커밋 ahead (push 필요)
