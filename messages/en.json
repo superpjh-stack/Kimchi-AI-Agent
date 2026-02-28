@@ -36,7 +36,15 @@
     "errorMessage": "An error occurred while generating the response. Please try again.",
     "sources": "Sources",
     "showMore": "Show more",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "voice": {
+      "playSpeech": "Read aloud",
+      "stopSpeaking": "Stop speaking",
+      "voiceModeOn": "Turn on voice mode",
+      "voiceModeOff": "Turn off voice mode",
+      "voiceModeActive": "New responses will be read aloud automatically",
+      "ttsNotSupported": "Text-to-speech is not supported in this browser"
+    }
   },
   "documents": {
     "title": "Document Manager",

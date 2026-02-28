@@ -13,6 +13,7 @@ import QuestionPanel from '@/components/questions/QuestionPanel';
 import { useChat } from '@/hooks/useChat';
 import { useConversations } from '@/hooks/useConversations';
 import { useAlerts } from '@/hooks/useAlerts';
+import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 
 // S4-6: 무거운 패널은 dynamic import로 초기 번들 분리
 const DashboardPanel = dynamic(() => import('@/components/dashboard/DashboardPanel'), {
@@ -42,6 +43,7 @@ export default function HomePage() {
     activeId ?? undefined
   );
   const { criticalCount, warningCount } = useAlerts();
+  const tts = useTextToSpeech({ lang: 'ko-KR' });
 
   // 스트리밍 완료 시 대화 목록 갱신 (새 대화가 사이드바에 반영)
   const prevIsStreaming = useRef(false);
@@ -124,6 +126,7 @@ export default function HomePage() {
                   chatStatus={chatStatus}
                   onSend={sendMessage}
                   conversationId={activeId ?? undefined}
+                  tts={tts}
                 />
               </div>
             )}

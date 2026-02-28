@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Mic, MicOff, Loader2 } from 'lucide-react';
+import { Mic, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
 
 interface VoiceInputProps {
@@ -26,6 +26,9 @@ export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) 
   const [isSupported, setIsSupported] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
+  // Fix Bug #2: keep latest onTranscript without re-creating the recognition instance
+  const onTranscriptRef = useRef(onTranscript);
+  useEffect(() => { onTranscriptRef.current = onTranscript; }, [onTranscript]);
 
   useEffect(() => {
     const SpeechRecognitionAPI =
@@ -47,7 +50,8 @@ export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) 
       recognition.onresult = (event: any) => {
         setVoiceState('processing');
         const transcript = event.results[0][0].transcript;
-        onTranscript(transcript);
+        // Fix Bug #2: use ref to always call the latest onTranscript
+        onTranscriptRef.current(transcript);
         setTimeout(() => setVoiceState('idle'), 300);
       };
 
@@ -56,9 +60,8 @@ export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) 
       };
 
       recognition.onend = () => {
-        if (voiceState === 'listening') {
-          setVoiceState('idle');
-        }
+        // Fix Bug #1: functional updater avoids stale closure on voiceState
+        setVoiceState((prev) => (prev === 'listening' ? 'idle' : prev));
       };
 
       recognitionRef.current = recognition;

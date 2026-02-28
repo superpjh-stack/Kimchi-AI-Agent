@@ -26,7 +26,8 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
+            // microphone=(self) — 같은 출처(앱 자체)의 마이크 사용 허용 (Web Speech API 필요)
+            value: 'camera=(), microphone=(self), geolocation=()',
           },
         ],
       },

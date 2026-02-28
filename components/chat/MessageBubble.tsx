@@ -3,21 +3,27 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { ChevronDown, ChevronUp, FileText } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileText, Volume2, VolumeX } from 'lucide-react';
 import clsx from 'clsx';
+import { useTranslations } from 'next-intl';
 import type { Message } from '@/types';
 
 interface MessageBubbleProps {
   message: Message;
   isStreaming?: boolean;
+  onSpeak?: (text: string) => void;
+  onStopSpeaking?: () => void;
+  speakingMessageId?: string;
 }
 
 const COLLAPSE_THRESHOLD = 500;
 
-function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
+function MessageBubble({ message, isStreaming, onSpeak, onStopSpeaking, speakingMessageId }: MessageBubbleProps) {
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const t = useTranslations('chat');
   const isUser = message.role === 'user';
+  const isThisSpeaking = speakingMessageId === message.id;
   const hasSources = message.sources && message.sources.length > 0;
 
   const content = message.content || '';
@@ -117,13 +123,40 @@ function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
           </div>
         )}
 
-        {/* Timestamp */}
-        <span className="text-xs text-brand-text-muted mt-1 px-1">
-          {new Date(message.createdAt).toLocaleTimeString('ko-KR', {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </span>
+        {/* Timestamp + TTS button row */}
+        <div className="flex items-center gap-2 mt-1 px-1">
+          <span className="text-xs text-brand-text-muted">
+            {new Date(message.createdAt).toLocaleTimeString('ko-KR', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </span>
+
+          {/* Speaker button — assistant messages only, not while streaming */}
+          {!isUser && !isStreaming && onSpeak && (
+            <button
+              type="button"
+              onClick={() => {
+                if (isThisSpeaking) {
+                  onStopSpeaking?.();
+                } else {
+                  onSpeak(message.content);
+                }
+              }}
+              title={isThisSpeaking ? t('voice.stopSpeaking') : t('voice.playSpeech')}
+              aria-label={isThisSpeaking ? t('voice.stopSpeaking') : t('voice.playSpeech')}
+              className={clsx(
+                'flex items-center justify-center w-6 h-6 rounded-full transition-all duration-200',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-kimchi-green',
+                isThisSpeaking
+                  ? 'bg-kimchi-green text-white speaking-pulse'
+                  : 'text-brand-text-muted hover:text-kimchi-green hover:bg-kimchi-beige'
+              )}
+            >
+              {isThisSpeaking ? <VolumeX size={12} /> : <Volume2 size={12} />}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

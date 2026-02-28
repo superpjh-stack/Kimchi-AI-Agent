@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, KeyboardEvent } from 'react';
-import { Send } from 'lucide-react';
+import { Send, Volume2, VolumeX } from 'lucide-react';
 import clsx from 'clsx';
 import { useTranslations } from 'next-intl';
 import VoiceInput from './VoiceInput';
@@ -10,12 +10,18 @@ interface ChatInputProps {
   onSend: (message: string) => void;
   isStreaming?: boolean;
   placeholder?: string;
+  voiceMode?: boolean;
+  onVoiceModeToggle?: () => void;
+  isTtsSupported?: boolean;
 }
 
 export default function ChatInput({
   onSend,
   isStreaming = false,
   placeholder,
+  voiceMode = false,
+  onVoiceModeToggle,
+  isTtsSupported = false,
 }: ChatInputProps) {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -53,9 +59,14 @@ export default function ChatInput({
   }, []);
 
   const handleVoiceTranscript = useCallback((text: string) => {
-    setInput((prev) => (prev ? `${prev} ${text}` : text));
-    textareaRef.current?.focus();
-  }, []);
+    const trimmed = text.trim();
+    if (!trimmed || isStreaming) return;
+    onSend(trimmed);
+    setInput('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+  }, [isStreaming, onSend]);
 
   const canSend = input.trim().length > 0 && !isStreaming;
 
@@ -64,6 +75,27 @@ export default function ChatInput({
       <div className="flex items-end gap-2 max-w-4xl mx-auto">
         {/* Voice Input */}
         <VoiceInput onTranscript={handleVoiceTranscript} disabled={isStreaming} />
+
+        {/* Voice Mode Toggle (TTS) */}
+        {isTtsSupported && onVoiceModeToggle && (
+          <button
+            type="button"
+            onClick={onVoiceModeToggle}
+            aria-pressed={voiceMode}
+            title={voiceMode ? t('voice.voiceModeOff') : t('voice.voiceModeOn')}
+            aria-label={voiceMode ? t('voice.voiceModeOff') : t('voice.voiceModeOn')}
+            className={clsx(
+              'flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200',
+              'min-h-[48px] min-w-[48px]',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-kimchi-orange',
+              voiceMode
+                ? 'bg-kimchi-green text-white shadow-sm'
+                : 'bg-kimchi-beige text-brand-text-secondary hover:bg-kimchi-beige-dark'
+            )}
+          >
+            {voiceMode ? <Volume2 size={18} /> : <VolumeX size={18} />}
+          </button>
+        )}
 
         {/* Text Input */}
         <div className="flex-1 relative">

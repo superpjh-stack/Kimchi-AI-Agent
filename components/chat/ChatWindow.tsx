@@ -1,11 +1,20 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Message, ChatStatus } from '@/types';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
 import QuickQuestions from './QuickQuestions';
 import AiStatusLight from './AiStatusLight';
+
+interface TtsControls {
+  speak: (text: string) => void;
+  stop: () => void;
+  isSpeaking: boolean;
+  isSupported: boolean;
+  voiceMode: boolean;
+  setVoiceMode: (on: boolean) => void;
+}
 
 interface ChatWindowProps {
   messages: Message[];
@@ -13,6 +22,7 @@ interface ChatWindowProps {
   chatStatus?: ChatStatus;
   onSend: (message: string) => void;
   conversationId?: string;
+  tts?: TtsControls;
 }
 
 function WelcomeScreen({ onSelect }: { onSelect: (q: string) => void }) {
@@ -47,9 +57,12 @@ export default function ChatWindow({
   chatStatus = 'idle',
   onSend,
   conversationId,
+  tts,
 }: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | undefined>();
+  const prevIsStreamingRef = useRef(isStreaming);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -57,6 +70,56 @@ export default function ChatWindow({
       bottomRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isStreaming]);
+
+  // Clear speakingMessageId when TTS stops
+  useEffect(() => {
+    if (tts && !tts.isSpeaking) {
+      setSpeakingMessageId(undefined);
+    }
+  }, [tts?.isSpeaking]);
+
+  // Auto TTS: when streaming completes, read last assistant message if voiceMode is on
+  useEffect(() => {
+    const wasStreaming = prevIsStreamingRef.current;
+    prevIsStreamingRef.current = isStreaming;
+
+    if (wasStreaming && !isStreaming && tts?.voiceMode && tts.isSupported) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg && lastMsg.role === 'assistant' && lastMsg.content) {
+        setSpeakingMessageId(lastMsg.id);
+        tts.speak(lastMsg.content);
+      }
+    }
+  }, [isStreaming, messages, tts]);
+
+  // Stop TTS when new streaming starts
+  useEffect(() => {
+    if (isStreaming && tts?.isSpeaking) {
+      tts.stop();
+      setSpeakingMessageId(undefined);
+    }
+  }, [isStreaming]);
+
+  const handleSpeak = useCallback((messageId: string, text: string) => {
+    if (!tts) return;
+    setSpeakingMessageId(messageId);
+    tts.speak(text);
+  }, [tts]);
+
+  const handleStopSpeaking = useCallback(() => {
+    if (!tts) return;
+    tts.stop();
+    setSpeakingMessageId(undefined);
+  }, [tts]);
+
+  const handleVoiceModeToggle = useCallback(() => {
+    if (!tts) return;
+    if (tts.voiceMode && tts.isSpeaking) {
+      tts.stop();
+      setSpeakingMessageId(undefined);
+    }
+    tts.setVoiceMode(!tts.voiceMode);
+  }, [tts]);
 
   const isEmpty = messages.length === 0;
 
@@ -87,6 +150,9 @@ export default function ChatWindow({
                     key={message.id}
                     message={message}
                     isStreaming={isStreamingThis}
+                    onSpeak={tts?.isSupported ? (text) => handleSpeak(message.id, text) : undefined}
+                    onStopSpeaking={handleStopSpeaking}
+                    speakingMessageId={speakingMessageId}
                   />
                 );
               })}
@@ -96,7 +162,13 @@ export default function ChatWindow({
         </div>
 
         {/* Input area */}
-        <ChatInput onSend={onSend} isStreaming={isStreaming} />
+        <ChatInput
+          onSend={onSend}
+          isStreaming={isStreaming}
+          voiceMode={tts?.voiceMode}
+          onVoiceModeToggle={tts ? handleVoiceModeToggle : undefined}
+          isTtsSupported={tts?.isSupported}
+        />
       </div>
     </div>
   );

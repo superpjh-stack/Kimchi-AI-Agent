@@ -36,7 +36,15 @@
     "errorMessage": "답변 생성 중 오류가 발생했습니다. 다시 시도해주세요.",
     "sources": "참고 문서",
     "showMore": "더 보기",
-    "showLess": "접기"
+    "showLess": "접기",
+    "voice": {
+      "playSpeech": "읽어주기",
+      "stopSpeaking": "읽기 중지",
+      "voiceModeOn": "음성 모드 켜기",
+      "voiceModeOff": "음성 모드 끄기",
+      "voiceModeActive": "새 답변을 자동으로 읽어줍니다",
+      "ttsNotSupported": "이 브라우저에서 음성 출력을 지원하지 않습니다"
+    }
   },
   "documents": {
     "title": "문서 관리",
