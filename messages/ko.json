@@ -28,6 +28,10 @@
     "settings": "설정"
   },
   "chat": {
+    "welcome": {
+      "title": "김치공장 AI 도우미",
+      "description": "김치공장 운영, 발효 공정, 품질 관리에 대해 무엇이든 물어보세요.\n공정 데이터와 레시피를 기반으로 정확한 답변을 드립니다."
+    },
     "placeholder": "김치 제조에 대해 무엇이든 물어보세요...",
     "voiceLabel": "음성 입력",
     "ragSearching": "관련 문서 검색 중...",

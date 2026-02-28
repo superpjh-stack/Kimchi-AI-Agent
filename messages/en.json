@@ -28,6 +28,10 @@
     "settings": "Settings"
   },
   "chat": {
+    "welcome": {
+      "title": "Kimchi Factory AI Assistant",
+      "description": "Ask anything about kimchi factory operations, fermentation processes, and quality control.\nWe provide accurate answers based on process data and recipes."
+    },
     "placeholder": "Ask anything about kimchi manufacturing...",
     "voiceLabel": "Voice input",
     "ragSearching": "Searching related documents...",

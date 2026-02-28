@@ -296,9 +296,11 @@ textarea:focus-visible {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Mobile bottom nav space */
+/* Mobile bottom nav space
+   NOTE: <main> already has pb-14 for BottomNav space.
+   Only add iOS safe-area-inset + base padding here. */
 .chat-bottom-padding {
-  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
 }
 
 /* iOS safe area bottom padding */
