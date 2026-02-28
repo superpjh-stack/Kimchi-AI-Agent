@@ -1,9 +1,10 @@
 // POST /api/ml/predict — 발효 완성도 예측 (30초 캐시)
 import * as Sentry from '@sentry/nextjs';
 import { ok, err } from '@/lib/utils/api-response';
-import { getPredictor } from '@/lib/ml/predictor-factory';
+import { getPredictor, createPredictorForTenant } from '@/lib/ml/predictor-factory';
 import { PredictionCache, makeFermentationKey } from '@/lib/ml/prediction-cache';
 import { predictionHistory } from '@/lib/ml/prediction-history';
+import { extractTenantId, isMultiTenantEnabled } from '@/lib/tenant/tenant-middleware';
 import { createLogger } from '@/lib/logger';
 import { mlLimiter } from '@/lib/middleware/rate-limit';
 import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
@@ -49,7 +50,10 @@ async function predictHandler(req: AuthRequest): Promise<Response> {
   }
 
   try {
-    const predictor = getPredictor();
+    const tenantId = extractTenantId(req);
+    const predictor = isMultiTenantEnabled()
+      ? createPredictorForTenant(tenantId)
+      : getPredictor();
     const prediction = await Sentry.startSpan(
       { op: 'ml.predict', name: 'ML Fermentation Prediction' },
       async (span) => {

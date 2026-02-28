@@ -16,6 +16,7 @@ import {
   conversationStore,
 } from '@/lib/db/conversations-store';
 import { generateTitle, truncate } from '@/lib/utils/markdown';
+import { getTenantContext } from '@/lib/tenant/tenant-context';
 import { createLogger } from '@/lib/logger';
 import type { Message } from '@/types';
 
@@ -28,6 +29,7 @@ export interface ChatServiceParams {
   message: string;
   conversationId: string;
   history: Message[];
+  tenantId?: string;
 }
 
 /**
@@ -35,7 +37,7 @@ export interface ChatServiceParams {
  * 스트리밍 완료 후 대화 영구화(onComplete)를 자동 처리.
  */
 export async function streamChat(params: ChatServiceParams): Promise<Response> {
-  const { message, conversationId, history } = params;
+  const { message, conversationId, history, tenantId } = params;
 
   // 1. RAG 컨텍스트 + 센서 데이터 병렬 조회
   const [ragResult, sensorData] = await Promise.all([
@@ -43,8 +45,14 @@ export async function streamChat(params: ChatServiceParams): Promise<Response> {
     createSensorClient().getCurrentData().catch(() => undefined),
   ]);
 
-  // 2. 시스템 프롬프트 구성
-  const systemPrompt = buildSystemPrompt(ragResult.context, sensorData);
+  // 2. 시스템 프롬프트 구성 (FR-44: tenant별 시스템 프롬프트 지원)
+  const tenantCtx = getTenantContext();
+  const systemPrompt = buildSystemPrompt(
+    ragResult.context,
+    sensorData,
+    undefined,
+    tenantCtx.config.systemPrompt,
+  );
 
   // 3. 메시지 히스토리 (최근 20개 제한)
   const recentHistory = history.slice(-20);

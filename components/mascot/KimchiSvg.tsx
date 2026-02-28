@@ -2,17 +2,20 @@
 
 import React from 'react';
 import type { MascotState } from '@/types/mascot';
+import { SeasonalSvgLayer, getCurrentSeason } from './seasonal/SeasonalOverlay';
 
 interface KimchiSvgProps {
   state: MascotState;
   size?: number;
   className?: string;
+  onClick?: () => void;
 }
 
 const KimchiSvg = React.memo(function KimchiSvg({
   state,
   size = 60,
   className = '',
+  onClick,
 }: KimchiSvgProps) {
   // 상태별 입 모양 path
   const mouthPath: Record<MascotState, string> = {
@@ -73,9 +76,11 @@ const KimchiSvg = React.memo(function KimchiSvg({
       viewBox="0 0 60 60"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={`kimchi-mascot kimchi-mascot--${state} ${className}`}
+      className={`kimchi-mascot kimchi-mascot--${state} ${className}${onClick ? ' cursor-pointer' : ''}`}
       role="img"
       aria-hidden="true"
+      onClick={onClick}
+      style={onClick ? { pointerEvents: 'all' } : undefined}
     >
       {/* 잎사귀 3장 */}
       <ellipse cx="22" cy="10" rx="6" ry="10" fill="#52B788"
@@ -129,13 +134,30 @@ const KimchiSvg = React.memo(function KimchiSvg({
         </g>
       )}
 
-      {/* sleeping 상태: Zzz */}
+      {/* sleeping 상태: Zzz — 5개 float 파티클 */}
       {state === 'sleeping' && (
         <g className="kimchi-mascot__zzz">
-          <text x="44" y="18" fontSize="8" fill="#A8907A" fontWeight="bold" opacity="0.7">Z</text>
-          <text x="48" y="12" fontSize="6" fill="#A8907A" fontWeight="bold" opacity="0.5">z</text>
-          <text x="51" y="8" fontSize="5" fill="#A8907A" fontWeight="bold" opacity="0.3">z</text>
+          <text x="42" y="20" fontSize="9" fill="#A8907A" fontWeight="bold" opacity="0.8">Z</text>
+          <text x="46" y="14" fontSize="7" fill="#A8907A" fontWeight="bold" opacity="0.65">z</text>
+          <text x="49" y="9"  fontSize="6" fill="#A8907A" fontWeight="bold" opacity="0.5">z</text>
+          <text x="52" y="5"  fontSize="5" fill="#A8907A" fontWeight="bold" opacity="0.35">z</text>
+          <text x="54" y="2"  fontSize="4" fill="#A8907A" fontWeight="bold" opacity="0.2">z</text>
         </g>
+      )}
+
+      {/* 계절 오버레이 */}
+      <SeasonalSvgLayer season={getCurrentSeason()} />
+
+      {/* 클릭 리플 원 */}
+      {onClick && (
+        <circle
+          cx="30" cy="34" r="18"
+          fill="none"
+          stroke="#D62828"
+          strokeWidth="2"
+          opacity="0"
+          className="kimchi-mascot__ripple"
+        />
       )}
     </svg>
   );

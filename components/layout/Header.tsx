@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import { useTranslations } from 'next-intl';
 import type { TabId } from '@/components/layout/BottomNav';
 import LocaleSwitcher from '@/components/layout/LocaleSwitcher';
+import TenantSelector from '@/components/tenant/TenantSelector';
 
 interface HeaderProps {
   title?: string;
@@ -124,6 +125,9 @@ export default function Header({
           </>
         )}
       </div>
+
+      {/* Tenant Selector (FR-45: multi-tenant 시 표시) */}
+      <TenantSelector />
 
       {/* Locale Switcher */}
       <LocaleSwitcher />

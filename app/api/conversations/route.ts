@@ -5,13 +5,12 @@ import { ok, created } from '@/lib/utils/api-response';
 import { isBkendConfigured, conversationsDb } from '@/lib/db/bkend';
 import { conversationStore, createConversationEntry, setConversationEntry } from '@/lib/db/conversations-store';
 import { generateTitle, truncate } from '@/lib/utils/markdown';
-// TODO(Sprint2): 로그인 UI 완성 후 withAuth 재활성화
-// import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
+import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
 
 export const runtime = 'nodejs';
 
 // GET /api/conversations?limit=20&page=1
-async function listConversations(req: Request): Promise<Response> {
+async function listConversations(req: AuthRequest): Promise<Response> {
   const url = new URL(req.url);
   const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '20', 10), 100);
   const page = Math.max(parseInt(url.searchParams.get('page') ?? '1', 10), 1);
@@ -38,7 +37,7 @@ async function listConversations(req: Request): Promise<Response> {
 }
 
 // POST /api/conversations — 새 대화 생성
-async function createConversation(req: Request): Promise<Response> {
+async function createConversation(req: AuthRequest): Promise<Response> {
   let body: { firstMessage?: string } = {};
   try {
     body = (await req.json()) as { firstMessage?: string };
@@ -63,8 +62,5 @@ async function createConversation(req: Request): Promise<Response> {
   return created(conversation);
 }
 
-// TODO(Sprint2): 로그인 UI 완성 후 withAuth 재활성화
-// export const GET  = withAuth(listConversations,   { permissions: ['conversations:read'] });
-// export const POST = withAuth(createConversation,  { permissions: ['conversations:write'] });
-export const GET  = listConversations;
-export const POST = createConversation;
+export const GET  = withAuth(listConversations,  { permissions: ['conversations:read'] });
+export const POST = withAuth(createConversation, { permissions: ['conversations:write'] });

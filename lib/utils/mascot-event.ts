@@ -7,13 +7,14 @@ import type { MascotState, MascotContext, MascotEventDetail } from '@/types/masc
 export function dispatchMascotEvent(
   state: MascotState,
   context?: MascotContext,
-  forcedPhrase?: string
+  forcedPhrase?: string,
+  xpReward?: number
 ): void {
   if (typeof window === 'undefined') return;
 
   window.dispatchEvent(
     new CustomEvent<MascotEventDetail>('kimchi-mascot', {
-      detail: { state, context, forcedPhrase },
+      detail: { state, context, forcedPhrase, xpReward },
     })
   );
 }

@@ -43,17 +43,23 @@ export const KIMCHI_SYSTEM_PROMPT = `
 /**
  * Build the final system prompt by injecting RAG context and optional sensor data.
  * If no context is available, provides a fallback message.
+ * FR-44: tenantSystemPrompt가 제공되면 기본 프롬프트 앞에 공장별 지침을 추가합니다.
  */
 export function buildSystemPrompt(
   ragContext: string,
   sensorData?: SensorData,
-  mlPrediction?: { fermentation?: FermentationPrediction; quality?: QualityPrediction }
+  mlPrediction?: { fermentation?: FermentationPrediction; quality?: QualityPrediction },
+  tenantSystemPrompt?: string,
 ): string {
   const contextText = ragContext.trim()
     ? ragContext
     : '관련 문서가 없습니다. 일반 지식을 기반으로 답변합니다.';
 
   let prompt = KIMCHI_SYSTEM_PROMPT.replace('{RAG_CONTEXT}', contextText);
+
+  if (tenantSystemPrompt) {
+    prompt = `## 공장별 추가 지침\n${tenantSystemPrompt}\n\n${prompt}`;
+  }
 
   if (sensorData) {
     const sensorSection = `

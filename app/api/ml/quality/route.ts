@@ -1,7 +1,8 @@
 // POST /api/ml/quality — 품질 등급 예측 (30초 캐시)
 import { ok, err } from '@/lib/utils/api-response';
-import { getPredictor } from '@/lib/ml/predictor-factory';
+import { getPredictor, createPredictorForTenant } from '@/lib/ml/predictor-factory';
 import { PredictionCache, makeQualityKey } from '@/lib/ml/prediction-cache';
+import { extractTenantId, isMultiTenantEnabled } from '@/lib/tenant/tenant-middleware';
 import { createLogger } from '@/lib/logger';
 import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
 import type { QualityInput, QualityPrediction } from '@/lib/ml/predictor';
@@ -31,7 +32,10 @@ async function qualityHandler(req: AuthRequest): Promise<Response> {
   }
 
   try {
-    const predictor = getPredictor();
+    const tenantId = extractTenantId(req);
+    const predictor = isMultiTenantEnabled()
+      ? createPredictorForTenant(tenantId)
+      : getPredictor();
     const prediction = await predictor.predictQuality(body);
     cache.set(cacheKey, prediction);
     return ok({ ...prediction, cached: false });

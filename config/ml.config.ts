@@ -42,3 +42,19 @@ export function loadMLConfig(): MLConfig {
   if (threshold) config.confidence.threshold = parseFloat(threshold);
   return config;
 }
+
+/** Tenant별 ML 설정 로드 — tenant의 mlConfig를 기본값에 deep merge */
+export function loadMLConfigForTenant(tenantMlConfig?: Partial<MLConfig>): MLConfig {
+  const base = loadMLConfig();
+  if (!tenantMlConfig) return base;
+
+  return {
+    fermentation: { ...base.fermentation, ...tenantMlConfig.fermentation },
+    anomaly: { ...base.anomaly, ...tenantMlConfig.anomaly },
+    quality: {
+      gradeA: { ...base.quality.gradeA, ...tenantMlConfig.quality?.gradeA },
+      gradeB: { ...base.quality.gradeB, ...tenantMlConfig.quality?.gradeB },
+    },
+    confidence: { ...base.confidence, ...tenantMlConfig.confidence },
+  };
+}

@@ -10,9 +10,9 @@ const nextConfig = {
   reactStrictMode: true,
   experimental: {
     // AWS Lambda(Amplify Compute) 환경에서 네이티브 모듈 번들링 제외
-    // pdf-parse, xlsx, pg: 바이너리/네이티브 의존성 포함
+    // pdf-parse, pg: 바이너리/네이티브 의존성 포함
     // pino/thread-stream: Worker Thread 경로 문제 방지
-    serverComponentsExternalPackages: ['pdf-parse', 'xlsx', 'pg', 'pino', 'thread-stream'],
+    serverComponentsExternalPackages: ['pdf-parse', 'pg', 'pino', 'thread-stream'],
   },
   async headers() {
     return [

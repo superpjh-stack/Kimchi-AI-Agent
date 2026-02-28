@@ -15,6 +15,7 @@ import { useConversations } from '@/hooks/useConversations';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import KimchiMascotContainer from '@/components/mascot/KimchiMascotContainer';
+import { useMascotAlertBridge } from '@/hooks/useMascotAlertBridge';
 
 // 무거운 패널은 dynamic import로 초기 번들 분리
 const DashboardPanel = dynamic(() => import('@/components/dashboard/DashboardPanel'), {
@@ -39,6 +40,7 @@ export default function HomePage() {
     activeId ?? undefined
   );
   const { criticalCount, warningCount } = useAlerts();
+  useMascotAlertBridge(criticalCount, warningCount);
   const tts = useTextToSpeech({ lang: 'ko-KR' });
 
   // 스트리밍 완료 시 대화 목록 갱신 (새 대화가 사이드바에 반영)

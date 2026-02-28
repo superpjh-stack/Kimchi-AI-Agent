@@ -4,6 +4,73 @@ All notable changes to the Kimchi-Agent project are documented here. The format 
 
 ---
 
+## [6.0.0] - 2026-02-28 (Phase 6: Security + Testing + ML A/B)
+
+### Summary
+Phase 6 PDCA completion with security hardening (JWT auth, RBAC), test coverage expansion (Jest 241 tests, Playwright E2E), ML A/B test framework, and Questions panel integration. Achieved 97.1% match rate after Act-1 iteration.
+
+### Added
+
+#### Security (Sprint 1)
+- JWT authentication system (jose HS256, Access 1h / Refresh 7d)
+- RBAC with 3 roles (admin/operator/viewer) and 12 permissions
+- API authentication middleware applied to 17 endpoints
+- Audit logging for critical operations (delete, update, upload, login)
+- Magic bytes file validation (MIME type verification)
+- CSP nonce-based security headers
+- Input sanitization for prompt injection mitigation
+- Improved rate limiters with TTL cleanup, multi-limiter support
+
+#### Testing (Sprint 2)
+- Jest unit tests expanded: 61 → 241 tests (180 new tests)
+- Test suites: 4 → 12+ suites
+- Playwright E2E test suite with 5+ spec files (auth, chat, i18n, upload, questions)
+- GitHub Actions CI/CD pipeline with lint, tsc, jest, e2e, lighthouse
+- Lighthouse CI configuration (Performance ≥80, Accessibility ≥90)
+- Code coverage increased to ~85% (from ~30%)
+
+#### ML & Experimentation (Sprint 3)
+- A/B testing framework with experiment API (POST/GET/PATCH /api/ml/experiments)
+- Hash-based consistent user assignment (djb2 algorithm)
+- Experiment result tracking with accuracy metrics
+- Dashboard widget for real-time A/B test monitoring (30s polling)
+- Variant management and traffic split configuration
+
+#### Features
+- Questions panel full integration (6 categories, 60 questions)
+- i18n support for Questions (ko.json, en.json)
+- Mascot + Questions interaction (mascot celebrating on question select)
+- ChatService extraction (service layer pattern)
+- BM25 index file persistence (.local-db/bm25-index.json)
+- Debounced async conversation writing (500ms debounce)
+
+### Changed
+- xlsx package replaced with exceljs (resolves Critical CVE)
+- API chat and conversations endpoints now require authentication
+- ESLint configuration extended with strict TypeScript rules
+- CSP policy enhanced with nonce-based script-src
+- Rate limiting architecture refactored (multi-limiter pattern)
+
+### Fixed
+- C1: Removed xlsx from package.json (Critical CVE - Prototype Pollution)
+- C2-C4: Enabled withAuth on chat and conversations APIs
+- H1: Added RateLimiter TTL cleanup (memory leak prevention)
+- H2-H3: Added conversationsLimiter and alertsLimiter
+- H4: Added Edge Sentry PII filter
+- M1-M6: Fixed ESLint config, CSP, mascot integration
+
+### Removed
+- xlsx package (replaced with exceljs)
+- sentry.edge.config.ts (consolidated to instrumentation.ts)
+
+### Metrics
+- Security: OWASP Critical 2 → 0, High 5 → 0
+- npm audit: Critical 1 → 0, High 12 → 0
+- Test coverage: ~30% → ~85%
+- Overall Match Rate: 66.5% → 97.1% (after Act-1 iteration)
+
+---
+
 ## [1.0.0] - 2026-02-27 (MVP Release)
 
 ### Summary

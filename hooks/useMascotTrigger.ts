@@ -12,7 +12,8 @@ import type { MascotState, MascotEventDetail } from '@/types/mascot';
  * }));
  */
 export function useMascotTrigger(
-  onStateChange: (state: MascotState, forcedPhrase?: string) => void
+  onStateChange: (state: MascotState, forcedPhrase?: string) => void,
+  onXpGain?: (amount: number, context: string) => void
 ) {
   useEffect(() => {
     const handler = (e: Event) => {
@@ -20,9 +21,12 @@ export function useMascotTrigger(
       if (detail?.state) {
         onStateChange(detail.state, detail.forcedPhrase);
       }
+      if (detail?.xpReward && onXpGain) {
+        onXpGain(detail.xpReward, detail.context ?? 'system');
+      }
     };
 
     window.addEventListener('kimchi-mascot', handler);
     return () => window.removeEventListener('kimchi-mascot', handler);
-  }, [onStateChange]);
+  }, [onStateChange, onXpGain]);
 }

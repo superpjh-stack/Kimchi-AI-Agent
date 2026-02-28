@@ -2,10 +2,34 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { MascotState, MascotPhrase, MascotSettings } from '@/types/mascot';
+import { LEVEL_THRESHOLDS } from '@/types/mascot';
 import { getRandomPhrase } from '@/components/mascot/mascot-phrases';
 
 const STORAGE_KEY = 'kimchi-mascot-settings';
-const DEFAULT_SETTINGS: MascotSettings = { enabled: true, speechEnabled: true };
+const DAILY_XP_CAP = 50;
+
+const DEFAULT_SETTINGS: MascotSettings = {
+  enabled: true,
+  speechEnabled: true,
+  xp: 0,
+  level: 1,
+  dailyXp: 0,
+  dailyXpDate: '',
+  badges: [],
+  counters: {},
+};
+
+function calculateLevel(xp: number): number {
+  let level = 1;
+  for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (xp >= LEVEL_THRESHOLDS[i]) { level = i + 1; break; }
+  }
+  return level;
+}
+
+function todayStr(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 const STATE_RESET_DELAY: Record<MascotState, number> = {
   idle: 0,
@@ -59,6 +83,8 @@ function saveSettings(s: MascotSettings) {
   }
 }
 
+const CLICK_THROTTLE_MS = 300;
+
 export function useMascot() {
   const [state, setStateInternal] = useState<MascotState>('idle');
   const [phrase, setPhrase] = useState<MascotPhrase | null>(null);
@@ -67,6 +93,7 @@ export function useMascot() {
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flyTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const lastClickRef = useRef<number>(0);
 
   // 마운트 시 설정 로드 + 야간 체크
   useEffect(() => {
@@ -144,6 +171,45 @@ export function useMascot() {
     });
   }, []);
 
+  // XP 적립 + 레벨업 계산
+  const addXp = useCallback((amount: number, context: string) => {
+    setSettings((prev) => {
+      const today = todayStr();
+      const dailyXp = prev.dailyXpDate === today ? prev.dailyXp : 0;
+      const remaining = Math.max(0, DAILY_XP_CAP - dailyXp);
+      const gained = Math.min(amount, remaining);
+      if (gained <= 0) return prev;
+
+      const newXp = prev.xp + gained;
+      const newLevel = calculateLevel(newXp);
+      const newCounters = {
+        ...prev.counters,
+        [context]: (prev.counters[context] ?? 0) + 1,
+      };
+      const next: MascotSettings = {
+        ...prev,
+        xp: newXp,
+        level: newLevel,
+        dailyXp: dailyXp + gained,
+        dailyXpDate: today,
+        counters: newCounters,
+      };
+      saveSettings(next);
+      return next;
+    });
+  }, []);
+
+  // 클릭 인터랙션 — 300ms throttle, 새 랜덤 대사 + XP +1
+  const handleClick = useCallback(() => {
+    const now = Date.now();
+    if (now - lastClickRef.current < CLICK_THROTTLE_MS) return;
+    lastClickRef.current = now;
+
+    setPhrase(getRandomPhrase('idle'));
+    setShowSpeech(true);
+    addXp(1, 'clickCount');
+  }, [addXp]);
+
   useEffect(() => {
     return () => {
       if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
@@ -161,5 +227,7 @@ export function useMascot() {
     dismissSpeech,
     toggleEnabled,
     toggleSpeech,
+    handleClick,
+    addXp,
   };
 }

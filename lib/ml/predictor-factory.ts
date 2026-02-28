@@ -1,8 +1,11 @@
-// lib/ml/predictor-factory.ts — getPredictor() + createPredictor() (A/B 지원)
+// lib/ml/predictor-factory.ts — getPredictor() + createPredictor() (A/B 지원) + tenant 분리
 import { RuleBasedPredictor } from './rule-based-predictor';
 import { experimentManager } from './ab-manager';
+import { loadMLConfigForTenant } from '@/config/ml.config';
+import { tenantStore } from '@/lib/tenant/tenant-store';
 import { createLogger } from '@/lib/logger';
 import type { IPredictor } from './predictor';
+import type { TenantId } from '@/types/tenant';
 
 const log = createLogger('ml.predictor-factory');
 
@@ -51,4 +54,12 @@ export function createPredictor(options?: { batchId?: string }): IPredictor {
   }
 
   return getPredictor();
+}
+
+/** Tenant별 ML 설정이 적용된 predictor 생성 (FR-43) */
+export function createPredictorForTenant(tenantId: TenantId): IPredictor {
+  const tenant = tenantStore.get(tenantId);
+  const mlConfig = loadMLConfigForTenant(tenant?.mlConfig);
+  log.info({ tenantId, hasOverride: !!tenant?.mlConfig }, 'Creating tenant predictor');
+  return new RuleBasedPredictor(mlConfig);
 }

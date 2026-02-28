@@ -52,9 +52,15 @@ export function useChat(conversationId?: string) {
       abortRef.current = new AbortController();
 
       try {
+        const tenantId = typeof window !== 'undefined'
+          ? localStorage.getItem('x-tenant-id') ?? 'default'
+          : 'default';
         const response = await fetch('/api/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-tenant-id': tenantId,
+          },
           body: JSON.stringify({
             message: content.trim(),
             conversationId,
