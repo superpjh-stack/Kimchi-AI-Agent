@@ -2,7 +2,8 @@
 
 import { chunkText } from './chunker';
 import { embed, embedBatch } from './embedder';
-import { toDocumentSource, getVectorStore } from './retriever';
+import { toDocumentSource, getVectorStore, getVectorStoreForTenant } from './retriever';
+import { isMultiTenantEnabled } from '@/lib/tenant/tenant-middleware';
 import { bm25Index, restoreBM25FromFile } from './bm25';
 import { saveBM25Index } from '@/lib/db/file-store';
 import { createLogger } from '@/lib/logger';
@@ -49,8 +50,10 @@ function reciprocalRankFusion(rankedLists: string[][], k = 60): string[] {
  * 2. BM25 keyword search (lexical, top 10)
  * 3. Reciprocal Rank Fusion → top 5
  */
-export async function retrieveContext(query: string): Promise<RAGResult> {
-  const store = await getVectorStore();
+export async function retrieveContext(query: string, tenantId?: string): Promise<RAGResult> {
+  const store = (isMultiTenantEnabled() && tenantId)
+    ? getVectorStoreForTenant(tenantId)
+    : await getVectorStore();
 
   // S4-5: 쿼리 임베딩 캐시 조회 (30초 TTL)
   const cacheKey = query.trim().toLowerCase();
@@ -130,9 +133,12 @@ export async function ingestDocument(
   text: string,
   docId: string,
   docName: string,
-  chunkingOptions?: ChunkingOptions
+  chunkingOptions?: ChunkingOptions,
+  tenantId?: string
 ): Promise<number> {
-  const store = await getVectorStore();
+  const store = (isMultiTenantEnabled() && tenantId)
+    ? getVectorStoreForTenant(tenantId)
+    : await getVectorStore();
   const chunks = chunkText(text, docId, docName, chunkingOptions);
   if (chunks.length === 0) return 0;
 
@@ -159,8 +165,10 @@ export async function ingestDocument(
 /**
  * Remove a document from both vector store and BM25 index.
  */
-export async function removeDocumentFull(docId: string): Promise<void> {
-  const store = await getVectorStore();
+export async function removeDocumentFull(docId: string, tenantId?: string): Promise<void> {
+  const store = (isMultiTenantEnabled() && tenantId)
+    ? getVectorStoreForTenant(tenantId)
+    : await getVectorStore();
   await store.removeDocument(docId);
   bm25Index.remove(docId);
 }

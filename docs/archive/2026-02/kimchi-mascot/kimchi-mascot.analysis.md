@@ -6,7 +6,9 @@
 > **Version**: 1.0.0
 > **Analyst**: gap-detector Agent
 > **Date**: 2026-02-28
-> **Design Doc**: [kimchi-mascot.design.md](../02-design/features/kimchi-mascot.design.md)
+> **Design Doc**: [kimchi-mascot.design.md](../archive/2026-02/kimchi-mascot/kimchi-mascot.design.md)
+> **Plan Doc**: [kimchi-mascot.plan.md](../archive/2026-02/kimchi-mascot/kimchi-mascot.plan.md)
+> **Previous Analysis**: v1.0 (97.0%, 131 items) -- This is v2.0 post Framer Motion addition
 
 ---
 
@@ -14,28 +16,35 @@
 
 ### 1.1 Analysis Purpose
 
-Verify that the kimchi-mascot implementation matches the design document across all specified requirements: type definitions, SVG character, CSS animations, phrase data, global event system, hook integration, component composition, LocalStorage settings, night mode, ON/OFF toggle, accessibility, and i18n.
+kimchi-mascot feature의 설계 문서(design.md)와 실제 구현 코드 간의 일치 여부를 분석한다.
+이번 v2.0 분석은 기존 v1.0 분석(97.0%) 이후 추가된 **Framer Motion 자유비행 기능**의 영향을 평가한다.
 
 ### 1.2 Analysis Scope
 
-- **Design Document**: `docs/02-design/features/kimchi-mascot.design.md`
+- **Design Document**: `docs/archive/2026-02/kimchi-mascot/kimchi-mascot.design.md` (v1.0.0)
 - **Implementation Files**:
-  - `types/mascot.ts`
+  - `components/mascot/KimchiMascotContainer.tsx`
   - `components/mascot/KimchiSvg.tsx`
   - `components/mascot/MascotSpeech.tsx`
   - `components/mascot/MascotToggle.tsx`
-  - `components/mascot/KimchiMascotContainer.tsx`
   - `components/mascot/mascot-phrases.ts`
   - `hooks/useMascot.ts`
   - `hooks/useMascotTrigger.ts`
   - `lib/utils/mascot-event.ts`
-  - `hooks/useChat.ts` (modified)
-  - `components/documents/DocumentUpload.tsx` (modified)
-  - `app/[locale]/page.tsx` (modified)
-  - `app/globals.css` (modified)
-  - `messages/ko.json` (modified)
-  - `messages/en.json` (modified)
+  - `types/mascot.ts`
+  - `app/[locale]/page.tsx` (integration)
+  - `hooks/useChat.ts` (integration)
+  - `components/documents/DocumentUpload.tsx` (integration)
+  - `app/globals.css` (CSS animations)
+  - `messages/ko.json`, `messages/en.json` (i18n)
 - **Analysis Date**: 2026-02-28
+
+### 1.3 Key Change Since v1.0 Analysis
+
+**Framer Motion 자유비행 기능** 추가:
+- `framer-motion` 패키지 설치 (^12.34.3)
+- `hooks/useMascot.ts`: `position` state, `getRandomFlyTarget()`, `SHOULD_FLY` 테이블, `flyTimersRef` 추가
+- `components/mascot/KimchiMascotContainer.tsx`: `<div>` -> `<motion.div>` 교체, spring 물리 애니메이션
 
 ---
 
@@ -44,447 +53,510 @@ Verify that the kimchi-mascot implementation matches the design document across 
 ### 2.1 Type Definitions (types/mascot.ts)
 
 | Design Item | Implementation | Status | Notes |
-|-------------|---------------|--------|-------|
-| MascotState (7 values: idle, thinking, success, error, celebrating, searching, sleeping) | 7 values match exactly | Match | Line 2-9 |
-| MascotContext (4 values: chat, upload, system, time) | 4 values match exactly | Match | Line 13-16 |
-| MascotEventDetail (state, context?, forcedPhrase?) | 3 fields match exactly | Match | Line 19-24 |
-| MascotSettings (enabled, speechEnabled) | 2 fields match exactly | Match | Line 27-30 |
-| MascotPhrase (text, emoji?) | 2 fields match exactly | Match | Line 33-37 |
-| WindowEventMap global type extension | Implemented exactly | Match | Line 39-44 |
+|-------------|---------------|:------:|-------|
+| MascotState (7 values) | 7 values: idle/thinking/success/error/celebrating/searching/sleeping | Match | Exact match |
+| MascotContext (4 values) | 4 values: chat/upload/system/time | Match | Exact match |
+| MascotEventDetail interface | Implemented with state/context/forcedPhrase | Match | |
+| MascotSettings interface | Implemented with enabled/speechEnabled | Match | |
+| MascotPhrase interface | Implemented with text/emoji | Match | |
+| WindowEventMap global | `'kimchi-mascot': CustomEvent<MascotEventDetail>` | Match | |
 
-**Subtotal: 6/6 (100%)**
+**Type Definitions: 6/6 Match (100%)**
 
-### 2.2 SVG Character (KimchiSvg.tsx)
+### 2.2 File Structure
 
-| Design Item | Implementation | Status | Notes |
-|-------------|---------------|--------|-------|
-| React.memo wrapper | Implemented | Match | Line 12 |
-| Props: state, size=60, className='' | Match exactly | Match | Line 7-9, 12-16 |
-| 7-state mouthPath Record | All 7 paths match | Match | Line 18-26 |
-| sleeping eyes (closed arcs) | Match | Match | Line 29-37 |
-| error eyes (X pattern, 4 lines) | Match | Match | Line 39-47 |
-| default eyes (circles + blink animate + highlights) | Match | Match | Line 49-66 |
-| SVG root: viewBox="0 0 60 60", role="img", aria-hidden="true" | Match | Match | Line 69-79 |
-| CSS class: `kimchi-mascot kimchi-mascot--${state}` | Match | Match | Line 76 |
-| Leaves (3 ellipses: green tones) | Match | Match | Line 81-85 |
-| Body (ellipse #F5E6CA + stroke + internal veins) | Match | Match | Line 88-94 |
-| Blush cheeks (2 circles #E85D5D 30%) | Match | Match | Line 97-98 |
-| Arms left/right with class names | Match | Match | Line 108-115 |
-| Legs (2 lines) | Match | Match | Line 118-121 |
-| searching: magnifying glass group | Match | Match | Line 124-130 |
-| sleeping: Zzz text group | Match | Match | Line 133-139 |
-| Mobile size: w-[40px] h-[40px] md:w-[60px] md:h-[60px] | Match (in Container) | Match | Container line 57 |
+| Design File | Implementation File | Status | Notes |
+|-------------|---------------------|:------:|-------|
+| `components/mascot/KimchiMascotContainer.tsx` | Exists | Match | |
+| `components/mascot/KimchiSvg.tsx` | Exists | Match | |
+| `components/mascot/MascotSpeech.tsx` | Exists | Match | |
+| `components/mascot/MascotToggle.tsx` | Exists | Match | |
+| `components/mascot/mascot-phrases.ts` | Exists | Match | |
+| `hooks/useMascot.ts` | Exists | Match | |
+| `hooks/useMascotTrigger.ts` | Exists | Match | |
+| `types/mascot.ts` | Exists | Match | |
+| `lib/utils/mascot-event.ts` | Exists (not in Section 6.1 file list but in Section 8.2) | Match | |
 
-**Subtotal: 17/17 (100%)**
+**File Structure: 9/9 Match (100%)**
 
-### 2.3 CSS Animations (globals.css)
+### 2.3 SVG Character (KimchiSvg.tsx)
 
 | Design Item | Implementation | Status | Notes |
-|-------------|---------------|--------|-------|
-| .kimchi-mascot base (will-change, transition) | Match | Match | Line 141-144 |
-| @keyframes mascot-breathe (idle) | Match | Match | Line 147-153 |
-| @keyframes mascot-wobble (thinking) | Match | Match | Line 156-163 |
-| @keyframes mascot-jump (success) | Match | Match | Line 166-175 |
-| @keyframes mascot-shake (error) | Match | Match | Line 178-187 |
-| @keyframes mascot-celebrate (celebrating) | Match | Match | Line 190-198 |
-| @keyframes mascot-peek (searching) | Match | Match | Line 201-208 |
-| @keyframes mascot-sleep (sleeping) | Match | Match | Line 211-217 |
-| @keyframes mascot-zzz (Zzz float) | Match | Match | Line 220-228 |
-| arm-wave-left/right keyframes | Match | Match | Line 231-248 |
-| speech-fade-in/out keyframes | Match | Match | Line 251-264 |
-| prefers-reduced-motion: reduce (all 12 selectors) | Match | Match | Line 267-284 |
+|-------------|---------------|:------:|-------|
+| React.memo wrapping | `React.memo(function KimchiSvg(...))` | Match | |
+| Props: state, size=60, className | Implemented | Match | |
+| viewBox="0 0 60 60" | `viewBox="0 0 60 60"` | Match | |
+| role="img" aria-hidden="true" | `role="img" aria-hidden="true"` | Match | |
+| 7 mouthPath states | All 7 states with matching SVG paths | Match | |
+| sleeping eyes (curved paths) | 2 curved paths for closed eyes | Match | |
+| error eyes (X marks) | 4 lines forming X on each eye | Match | |
+| Normal eyes (circles + blink animation) | 2 circles with SVG animate + highlights | Match | |
+| 3 leaf ellipses | 3 ellipses (cx=22/30/38) with correct colors | Match | |
+| Body ellipse (cream) | `cx="30" cy="34" rx="16" ry="20" fill="#F5E6CA"` | Match | |
+| Green border overlay | Stroke #2A9D8F, 0.4 opacity | Match | |
+| Inner veins (2 paths) | 2 decorative paths | Match | |
+| Cheek blush (2 circles) | Red #E85D5D, 0.3 opacity | Match | |
+| Left arm path + class | `kimchi-mascot__arm-left` class | Match | |
+| Right arm path + class | `kimchi-mascot__arm-right` class | Match | |
+| Legs (2 lines) | 2 lines from y1=52 to y2=58 | Match | |
+| Searching magnifier (conditional) | `state === 'searching'` with g/circle/line | Match | |
+| Sleeping Zzz (conditional) | `state === 'sleeping'` with 3 text elements | Match | |
+| Responsive className `w-[40px] h-[40px] md:w-[60px] md:h-[60px]` | Applied via className prop from Container | Match | |
 
-**Subtotal: 12/12 (100%)**
+**SVG Character: 20/20 Match (100%)**
 
-### 2.4 Phrase Data (mascot-phrases.ts)
+### 2.4 CSS Animations (globals.css)
+
+| Design Keyframe | Implementation | Status | Notes |
+|-----------------|---------------|:------:|-------|
+| `.kimchi-mascot` base (will-change, transition) | `will-change: transform; transition: transform 0.3s ease-out;` | Match | |
+| `mascot-breathe` keyframe | Identical to design | Match | |
+| `.kimchi-mascot--idle` animation | `mascot-breathe 3s ease-in-out infinite` | Match | |
+| `mascot-wobble` keyframe | Identical to design | Match | |
+| `.kimchi-mascot--thinking` animation | `mascot-wobble 0.8s ease-in-out infinite` | Match | |
+| `mascot-jump` keyframe | Identical to design | Match | |
+| `.kimchi-mascot--success` animation | `mascot-jump 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards` | Match | |
+| `mascot-shake` keyframe | Identical to design | Match | |
+| `.kimchi-mascot--error` animation | `mascot-shake 0.5s ease-in-out` | Match | |
+| `mascot-celebrate` keyframe | Identical to design | Match | |
+| `.kimchi-mascot--celebrating` animation | `mascot-celebrate 0.8s ease-in-out 3` | Match | |
+| `mascot-peek` keyframe | Identical to design | Match | |
+| `.kimchi-mascot--searching` animation | `mascot-peek 1.2s ease-in-out infinite` | Match | |
+| `mascot-sleep` keyframe | Identical to design | Match | |
+| `.kimchi-mascot--sleeping` animation | `mascot-sleep 4s ease-in-out infinite` | Match | |
+| `mascot-zzz` keyframe | Identical to design | Match | |
+| `.kimchi-mascot__zzz text` animation + delays | 3 text elements with 0/0.3s/0.6s delays | Match | |
+| `arm-wave-left/right` keyframes | Identical to design | Match | |
+| Arm animations for success/celebrating | Both arms with transform-origin | Match | |
+| `speech-fade-in/out` keyframes | Identical to design | Match | |
+| `.mascot-speech--enter/exit` classes | Correct animation bindings | Match | |
+| `prefers-reduced-motion: reduce` media query | All 12 selectors with `animation: none !important; transition: none !important;` | Match | |
+
+**CSS Animations: 22/22 Match (100%)**
+
+### 2.5 MascotSpeech.tsx
 
 | Design Item | Implementation | Status | Notes |
-|-------------|---------------|--------|-------|
-| idle: 7 phrases | 7 phrases, all text/emoji match | Match | |
-| thinking: 8 phrases | 8 phrases, all match | Match | |
-| success: 7 phrases | 7 phrases, all match | Match | |
-| error: 7 phrases | 7 phrases, all match | Match | |
-| celebrating: 6 phrases | 6 phrases, all match | Match | |
-| searching: 6 phrases | 6 phrases, all match | Match | |
-| sleeping: 6 phrases | 6 phrases, all match | Match | |
-| Total: 47 phrases (design says "48" in 13.3) | 47 phrases counted | Changed | Design summary says 48, actual data has 47 |
-| getRandomPhrase() with duplicate prevention | Implemented with do-while + attempts<3 | Match | |
+|-------------|---------------|:------:|-------|
+| Props: text, emoji, duration=3500, onDismiss | Implemented | Match | |
+| isExiting state for exit animation | `useState(false)` | Match | |
+| Exit timer: `duration - 300` | `setTimeout(() => setIsExiting(true), duration - 300)` | Match | |
+| Dismiss timer: `duration` | `setTimeout(onDismiss, duration)` | Match | |
+| useEffect cleanup (clearTimeout) | Both timers cleared | Match | |
+| max-w-[180px] styling | Applied | Match | |
+| `role="status"` | Applied | Match | |
+| `aria-live="polite"` | Applied | Match | |
+| `aria-atomic="true"` | Applied | Match | |
+| Speech tail (rotated div) | Absolute positioned, rotated 45deg | Match | |
+| `relative` class on container div | **Design**: no `relative` class / **Impl**: has `relative` class | Changed | Minor: implementation added `relative` for tail positioning; design omitted it |
+
+**MascotSpeech: 10/11 Match, 1 Changed (90.9%)**
+
+### 2.6 MascotToggle.tsx
+
+| Design Item | Implementation | Status | Notes |
+|-------------|---------------|:------:|-------|
+| Props interface (enabled, speechEnabled, onToggle, onSpeechToggle) | Identical | Match | |
+| menuOpen/setMenuOpen state | Implemented | Match | |
+| menuRef for outside click | Implemented | Match | |
+| Outside click handler (mousedown) | Implemented with cleanup | Match | |
+| Disabled state: mini restore button | 8x8 rounded-full with emoji | Match | |
+| `aria-label="kimchi-kun on"` (Korean) | `aria-label="kimchi-gun kyogi"` | Match | |
+| Settings button (5x5 dots) | `w-5 h-5` with `...` text | Changed | Design: `...` (3 regular dots), Impl: `...` (Unicode middle dots U+00B7). Minor visual difference |
+| `aria-expanded={menuOpen}` | Applied | Match | |
+| Dropdown menu with 2 buttons | Implemented (on/off + speech toggle) | Match | |
+| `hover:bg-kimchi-cream` | Applied | Match | |
+
+**MascotToggle: 9/10 Match, 1 Changed (90%)**
+
+### 2.7 mascot-phrases.ts
+
+| Design Item | Implementation | Status | Notes |
+|-------------|---------------|:------:|-------|
+| PHRASES Record<MascotState, MascotPhrase[]> | Implemented | Match | |
+| idle: 7 phrases | 7 phrases, all identical to design | Match | |
+| thinking: 8 phrases | 8 phrases, all identical to design | Match | |
+| success: 7 phrases | 7 phrases, all identical to design | Match | |
+| error: 7 phrases | 7 phrases, all identical to design | Match | |
+| celebrating: 6 phrases | 6 phrases, emoji `🎊` vs design `냠냠~` (minor) | Match | Celebrating[0] emoji differs: design none, impl `🎊`. Negligible |
+| searching: 6 phrases | 6 phrases, all identical to design | Match | |
+| sleeping: 6 phrases | 6 phrases, all identical to design | Match | |
+| getRandomPhrase() dedup logic | `lastPhraseIndex` + max 3 attempts | Match | |
 | getPhrasesForState() test helper | Implemented | Match | |
-| lastPhraseIndex tracking | Implemented as `const` Record (design uses `let`) | Changed | `const` vs `let` -- functionally identical since Record is mutable |
+| `lastPhraseIndex` variable type | **Design**: `let` / **Impl**: `const` | Changed | `const` is correct since Record object reference does not change |
+| Total phrase count | **Design doc Section 13.3**: "48개" / **Impl**: 47 phrases | Changed | 7+8+7+7+6+6+6=47. Design had a count typo (48 vs 47) |
 
-**Subtotal: 9 Match + 2 Changed = 11 items, 9/11 match (81.8%)**
+**Phrases: 10/12 Match, 2 Changed (83.3%)**
 
-### 2.5 Event System (mascot-event.ts)
-
-| Design Item | Implementation | Status | Notes |
-|-------------|---------------|--------|-------|
-| dispatchMascotEvent(state, context?, forcedPhrase?) | Match exactly | Match | Line 7-18 |
-| window === 'undefined' guard | Match | Match | Line 12 |
-| CustomEvent('kimchi-mascot', { detail }) | Match | Match | Line 14-17 |
-
-**Subtotal: 3/3 (100%)**
-
-### 2.6 useMascot Hook (hooks/useMascot.ts)
+### 2.8 KimchiMascotContainer.tsx
 
 | Design Item | Implementation | Status | Notes |
-|-------------|---------------|--------|-------|
-| STORAGE_KEY = 'kimchi-mascot-settings' | Match | Match | Line 7 |
-| DEFAULT_SETTINGS { enabled: true, speechEnabled: true } | Match | Match | Line 8 |
-| STATE_RESET_DELAY record (7 entries) | Match (all values) | Match | Line 10-18 |
-| loadSettings() with window/try-catch | Match | Match | Line 20-29 |
-| saveSettings() with try-catch | Match | Match | Line 31-37 |
-| useState: state, phrase, showSpeech, settings | Match (4 states) | Match | Line 40-43 |
-| resetTimerRef | Match | Match | Line 44 |
-| useEffect mount: loadSettings + night mode check | Implemented inline vs separate callback | Changed | Design uses `checkNightMode` callback; impl uses inline `const hour` logic. Functionally identical. |
-| Night mode: hour >= 22 or < 6 | Match | Match | Line 50 |
-| setState: clearTimeout + setPhrase + auto-reset delay | Match | Match | Line 57-80 |
-| dismissSpeech callback | Match | Match | Line 82-84 |
-| toggleEnabled callback + saveSettings | Match | Match | Line 86-92 |
-| toggleSpeech callback + saveSettings | Match | Match | Line 94-100 |
-| Cleanup useEffect for resetTimer | Match | Match | Line 102-106 |
-| Return object: 8 properties | Match | Match | Line 108-117 |
+|-------------|---------------|:------:|-------|
+| imports: KimchiSvg, MascotSpeech, MascotToggle, useMascot, useMascotTrigger | All imported | Match | |
+| useMascot() destructuring (state, phrase, showSpeech, settings, setState, dismissSpeech, toggleEnabled, toggleSpeech) | Implemented + **position** added | Changed | New `position` state from Framer Motion addition |
+| useMascotTrigger(setState) call | Called | Match | |
+| OFF state: fixed div + MascotToggle only | Implemented | Match | |
+| ON state: wrapper div `fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50` | Position classes identical | Match | |
+| Wrapper: `flex flex-col items-end gap-1` | Applied | Match | |
+| Wrapper: `role="complementary" aria-label="kimchi-gun mascot"` | Applied | Match | |
+| Speech: conditional render with `showSpeech && phrase && settings.speechEnabled` | Implemented | Match | |
+| SVG: `<KimchiSvg state={state} size={60} className="w-[40px]...">` | Implemented | Match | |
+| Toggle: absolute positioned at top-left of character | `-top-1 -left-1` | Match | |
+| Wrapper element: `<div>` | **Design**: `<div>` / **Impl**: `<motion.div>` | Changed | Framer Motion migration |
+| **Import**: `useCallback` from react | **Design**: imports `useCallback` / **Impl**: no `useCallback` import (not needed) | Changed | `useCallback` was unused in design code too; implementation correctly omits it |
+| **New**: `import { motion } from 'framer-motion'` | Added | Added | Not in design |
+| **New**: `SPRING` constant | Added | Added | Not in design |
+| **New**: `animate={{ x: position.x, y: position.y }}` on motion.div | Added | Added | Not in design |
+| **New**: `transition={SPRING}` on motion.div | Added | Added | Not in design |
 
-**Subtotal: 14 Match + 1 Changed = 15 items, 14/15 match (93.3%)**
+**Container: 10/12 Match, 2 Changed, 4 Added (83.3% match rate)**
 
-### 2.7 useMascotTrigger Hook (hooks/useMascotTrigger.ts)
-
-| Design Item | Implementation | Status | Notes |
-|-------------|---------------|--------|-------|
-| onStateChange parameter signature | Match | Match | Line 14-15 |
-| Event handler: cast to CustomEvent, extract detail | Match | Match | Line 18-21 |
-| addEventListener / removeEventListener lifecycle | Match | Match | Line 25-26 |
-| Dependency: [onStateChange] | Match | Match | Line 27 |
-
-**Subtotal: 4/4 (100%)**
-
-### 2.8 KimchiMascotContainer (components/mascot/KimchiMascotContainer.tsx)
+### 2.9 useMascot.ts
 
 | Design Item | Implementation | Status | Notes |
-|-------------|---------------|--------|-------|
-| Imports: KimchiSvg, MascotSpeech, MascotToggle, useMascot, useMascotTrigger | Match | Match | Line 3-7 |
-| useMascot() destructure (8 properties) | Match | Match | Line 10-19 |
-| useMascotTrigger(setState) call | Match | Match | Line 22 |
-| OFF state: fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50 | Match | Match | Line 27 |
-| OFF: MascotToggle enabled=false | Match | Match | Line 28-31 |
-| ON: role="complementary" aria-label="..." | Match | Match | Line 40-41 |
-| Speech conditional: showSpeech && phrase && settings.speechEnabled | Match | Match | Line 44 |
-| MascotSpeech props: text, emoji, onDismiss | Match | Match | Line 45-48 |
-| KimchiSvg size=60 with responsive classes | Match | Match | Line 54-57 |
-| Toggle: absolute -top-1 -left-1 | Match | Match | Line 61 |
-| Design has `import { useCallback }` (unused) | Implementation omits it | Changed | Cleaner -- removed unused import |
+|-------------|---------------|:------:|-------|
+| STORAGE_KEY = 'kimchi-mascot-settings' | Identical | Match | |
+| DEFAULT_SETTINGS | Identical | Match | |
+| STATE_RESET_DELAY (7 entries) | Identical values | Match | |
+| loadSettings() with window check + try-catch | Identical | Match | |
+| saveSettings() with try-catch | Identical | Match | |
+| State: `state` (MascotState) | Implemented | Match | |
+| State: `phrase` (MascotPhrase or null) | Implemented | Match | |
+| State: `showSpeech` (boolean) | Implemented | Match | |
+| State: `settings` (MascotSettings) | Implemented | Match | |
+| Ref: `resetTimerRef` | Implemented | Match | |
+| Night mode check (22:00~06:00) on mount | Implemented | Match | |
+| Night mode: inline vs `checkNightMode` callback | **Design**: separate `checkNightMode` useCallback / **Impl**: inline in useEffect | Changed | Implementation simplifies by inlining -- functionally equivalent |
+| setState: clear previous timer | Implemented | Match | |
+| setState: forcedPhrase handling | Implemented | Match | |
+| setState: getRandomPhrase call | Implemented | Match | |
+| setState: auto-reset with STATE_RESET_DELAY | Implemented with idle + hide speech | Match | |
+| dismissSpeech | Implemented | Match | |
+| toggleEnabled with saveSettings | Implemented | Match | |
+| toggleSpeech with saveSettings | Implemented | Match | |
+| Cleanup useEffect (clearTimeout) | Implemented | Match | |
+| Return object: 8 fields | **Design**: 8 fields / **Impl**: 9 fields (+`position`) | Changed | Framer Motion addition |
+| **New**: `position` state (x, y) | Added | Added | Framer Motion free-flight position |
+| **New**: `getRandomFlyTarget()` function | Added | Added | Random viewport position calculator |
+| **New**: `SHOULD_FLY` Record | Added | Added | State-to-fly mapping |
+| **New**: `flyTimersRef` | Added | Added | Timer cleanup for celebrating 3-point flight |
+| **New**: Fly logic in setState | Added | Added | Position animation on state change |
+| **New**: Celebrating 3-point sequential flight | Added | Added | 0ms/700ms/1400ms timers |
+| **New**: Home return on idle/sleeping | Added | Added | `setPosition({ x: 0, y: 0 })` |
+| **New**: Home return on auto-reset | Added | Added | Position reset in reset timer |
+| **New**: `prefers-reduced-motion` check in getRandomFlyTarget | Added | Added | Returns {0,0} if reduced motion |
+| **New**: flyTimersRef cleanup in both setState and unmount | Added | Added | Memory leak prevention |
 
-**Subtotal: 10 Match + 1 Changed = 11 items, 10/11 match (90.9%)**
+**useMascot: 19/21 Match, 2 Changed, 10 Added (90.5% match rate)**
 
-### 2.9 MascotSpeech (components/mascot/MascotSpeech.tsx)
-
-| Design Item | Implementation | Status | Notes |
-|-------------|---------------|--------|-------|
-| Props: text, emoji?, duration=3500, onDismiss | Match | Match | Line 6-11 |
-| isExiting state | Match | Match | Line 19 |
-| exitTimer at duration-300, dismissTimer at duration | Match | Match | Line 22-23 |
-| Cleanup clearTimeout | Match | Match | Line 25-28 |
-| role="status" aria-live="polite" aria-atomic="true" | Match | Match | Line 39-41 |
-| break-keep class on text | Match | Match | Line 43 |
-| Emoji span with ml-1 | Match | Match | Line 45 |
-| Speech bubble tail (absolute -bottom-1.5) | Match | Match | Line 48-50 |
-| CSS class toggle: mascot-speech--exit/enter | Match | Match | Line 37 |
-| Design uses `max-w-[180px]`; impl has `relative` added | Implementation adds `relative` class | Changed | Needed for the absolutely-positioned tail div |
-
-**Subtotal: 9 Match + 1 Changed = 10 items, 9/10 match (90%)**
-
-### 2.10 MascotToggle (components/mascot/MascotToggle.tsx)
-
-| Design Item | Implementation | Status | Notes |
-|-------------|---------------|--------|-------|
-| Props: enabled, speechEnabled=true, onToggle, onSpeechToggle? | Match | Match | Line 4-9 |
-| menuOpen state + menuRef | Match | Match | Line 18-19 |
-| Outside click handler (mousedown) | Match | Match | Line 21-30 |
-| OFF state: button with emoji, aria-label, title | Match | Match | Line 33-45 |
-| ON state: menu toggle button with aria-expanded | Match | Match | Line 50-58 |
-| Menu items: "toggle off" + conditional "speech toggle" | Match | Match | Line 62-79 |
-| Design menu button text: `...` (3 dots) | Implementation: `...` (Unicode middle dot x3) | Changed | Visual equivalent; implementation uses `···` instead of `...` |
-
-**Subtotal: 6 Match + 1 Changed = 7 items, 6/7 match (85.7%)**
-
-### 2.11 useChat.ts Integration
+### 2.10 useMascotTrigger.ts
 
 | Design Item | Implementation | Status | Notes |
-|-------------|---------------|--------|-------|
-| import dispatchMascotEvent | Line 5 | Match | |
-| 1) searching event before fetch | Line 50 | Match | |
-| 2) thinking event on first token (chatStatus === 'rag-searching') | Line 91 | Match | |
-| 3) success event on done | Line 109 | Match | |
-| 4) error event in catch | Line 130 | Match | |
-| Design says "3 lines added" in 8.3 but specifies 4 dispatch points | 4 dispatch points + 1 import = 5 lines | Changed | Design section 8.3 title says "3 lines" but describes 4 dispatches. Impl has all 4. |
+|-------------|---------------|:------:|-------|
+| Function signature | `(onStateChange: (state: MascotState, forcedPhrase?: string) => void)` | Match | |
+| useEffect with event listener | `window.addEventListener('kimchi-mascot', handler)` | Match | |
+| Handler: extract detail and call onStateChange | Implemented | Match | |
+| Cleanup: removeEventListener | Implemented | Match | |
+| Dependency array: [onStateChange] | Applied | Match | |
 
-**Subtotal: 5 Match + 1 Changed = 6 items, 5/6 match (83.3%)**
+**useMascotTrigger: 5/5 Match (100%)**
 
-### 2.12 DocumentUpload.tsx Integration
-
-| Design Item | Implementation | Status | Notes |
-|-------------|---------------|--------|-------|
-| import dispatchMascotEvent | Line 9 | Match | |
-| celebrating event on upload success | Line 91 | Match | |
-
-**Subtotal: 2/2 (100%)**
-
-### 2.13 page.tsx Integration
+### 2.11 mascot-event.ts (Event Utility)
 
 | Design Item | Implementation | Status | Notes |
-|-------------|---------------|--------|-------|
-| import KimchiMascotContainer | Line 17 | Match | |
-| JSX: <KimchiMascotContainer /> after BottomNav | Line 160 | Match | |
-| Comment: "kimchi-kun mascot" | Line 159 | Match | |
+|-------------|---------------|:------:|-------|
+| Function: dispatchMascotEvent(state, context?, forcedPhrase?) | Implemented | Match | |
+| SSR guard: `typeof window === 'undefined'` | Applied | Match | |
+| CustomEvent dispatch with detail | Implemented | Match | |
 
-**Subtotal: 3/3 (100%)**
+**Event Utility: 3/3 Match (100%)**
 
-### 2.14 i18n (messages/ko.json + en.json)
+### 2.12 Integration Points
 
 | Design Item | Implementation | Status | Notes |
-|-------------|---------------|--------|-------|
-| ko.json mascot.label | "kimchi-gun mascot" | Match | |
-| ko.json mascot.turnOn | Match | Match | |
-| ko.json mascot.turnOff | Match | Match | |
-| ko.json mascot.speechOn | Match | Match | |
-| ko.json mascot.speechOff | Match | Match | |
-| ko.json mascot.settings | Match | Match | |
-| en.json mascot.label | "Kimchi-kun Mascot" | Match | |
-| en.json mascot.turnOn | Match | Match | |
-| en.json mascot.turnOff | Match | Match | |
-| en.json mascot.speechOn | Match | Match | |
-| en.json mascot.speechOff | Match | Match | |
-| en.json mascot.settings | Match | Match | |
+|-------------|---------------|:------:|-------|
+| useChat.ts: import dispatchMascotEvent | `import { dispatchMascotEvent } from '@/lib/utils/mascot-event'` | Match | |
+| useChat.ts: searching event on fetch | `dispatchMascotEvent('searching', 'chat')` before fetch | Match | |
+| useChat.ts: thinking event on first token | `if (chatStatus === 'rag-searching') dispatchMascotEvent('thinking', 'chat')` | Match | |
+| useChat.ts: success event on done | `dispatchMascotEvent('success', 'chat')` | Match | |
+| useChat.ts: error event on catch | `dispatchMascotEvent('error', 'chat')` | Match | |
+| DocumentUpload.tsx: celebrating event | `dispatchMascotEvent('celebrating', 'upload')` after success | Match | |
+| page.tsx: import KimchiMascotContainer | `import KimchiMascotContainer from '@/components/mascot/KimchiMascotContainer'` | Match | |
+| page.tsx: `<KimchiMascotContainer />` in JSX | Placed before closing `</div>`, after BottomNav | Match | |
+| messages/ko.json: mascot section | `"mascot": { "label", "turnOn", "turnOff", "speechOn", "speechOff", "settings" }` | Match | |
+| messages/en.json: mascot section | `"mascot": { "label", "turnOn", "turnOff", "speechOn", "speechOff", "settings" }` | Match | |
 
-**Subtotal: 12/12 (100%)**
+**Integration: 10/10 Match (100%)**
 
-### 2.15 File Structure
+### 2.13 Accessibility
 
-| Design File | Implementation | Status |
-|-------------|---------------|--------|
-| `types/mascot.ts` | Exists | Match |
-| `components/mascot/KimchiSvg.tsx` | Exists | Match |
-| `components/mascot/MascotSpeech.tsx` | Exists | Match |
-| `components/mascot/MascotToggle.tsx` | Exists | Match |
-| `components/mascot/KimchiMascotContainer.tsx` | Exists | Match |
-| `components/mascot/mascot-phrases.ts` | Exists | Match |
-| `hooks/useMascot.ts` | Exists | Match |
-| `hooks/useMascotTrigger.ts` | Exists | Match |
-| `lib/utils/mascot-event.ts` | Exists | Match |
+| Design Item | Implementation | Status | Notes |
+|-------------|---------------|:------:|-------|
+| SVG: `aria-hidden="true"` | Applied in KimchiSvg | Match | |
+| Container: `role="complementary"` | Applied | Match | |
+| Container: `aria-label="kimchi-gun mascot"` | Applied | Match | |
+| Speech: `role="status"` | Applied | Match | |
+| Speech: `aria-live="polite"` | Applied | Match | |
+| Speech: `aria-atomic="true"` | Applied | Match | |
+| Toggle ON: `aria-label="kimchi-gun settings"` | Applied | Match | |
+| Toggle ON: `aria-expanded={menuOpen}` | Applied | Match | |
+| Toggle OFF: `aria-label="kimchi-gun on"` + `title` | Applied | Match | |
+| `prefers-reduced-motion` media query | All animations disabled | Match | |
+| `prefers-reduced-motion` in getRandomFlyTarget | **New**: returns {0,0} to disable flight | Added | Enhancement beyond design |
 
-**Subtotal: 9/9 (100%)**
+**Accessibility: 10/10 Match, 1 Added (100%)**
+
+### 2.14 Performance / Dependencies
+
+| Design Item | Implementation | Status | Notes |
+|-------------|---------------|:------:|-------|
+| No additional packages required | **Design**: "none" / **Impl**: `framer-motion` (^12.34.3) added | Changed | 65KB+ bundle addition (tree-shakeable, but significant) |
+| CSS-only animations (GPU composite) | CSS animations still present + Framer Motion spring for position | Changed | Position animation now uses JS-driven spring physics |
+| JS animation cost: 0ms | framer-motion spring requires JS computation per frame | Changed | No longer "zero JS animation cost" |
+| Bundle size: ~4KB gzipped | framer-motion adds ~30-40KB gzipped (tree-shaken) | Changed | Significant deviation from design goal |
+| CLS: 0 | Still 0 (position:fixed, no layout shift) | Match | |
+| 60fps guaranteed | Spring animation targets 60fps (GPU accelerated transform) | Match | |
+| Memory leak prevention | `flyTimersRef.current.forEach(clearTimeout)` in cleanup | Match | |
+
+**Performance: 3/7 Match, 4 Changed (42.9%)**
 
 ---
 
-## 3. Match Rate Summary
+## 3. Summary Statistics
+
+### 3.1 Match Rate Calculation
+
+| Category | Total Items | Match | Changed | Missing | Added | Match Rate |
+|----------|:-----------:|:-----:|:-------:|:-------:|:-----:|:----------:|
+| Type Definitions | 6 | 6 | 0 | 0 | 0 | 100.0% |
+| File Structure | 9 | 9 | 0 | 0 | 0 | 100.0% |
+| SVG Character | 20 | 20 | 0 | 0 | 0 | 100.0% |
+| CSS Animations | 22 | 22 | 0 | 0 | 0 | 100.0% |
+| MascotSpeech | 11 | 10 | 1 | 0 | 0 | 90.9% |
+| MascotToggle | 10 | 9 | 1 | 0 | 0 | 90.0% |
+| Phrases Data | 12 | 10 | 2 | 0 | 0 | 83.3% |
+| Container | 12 | 10 | 2 | 0 | 4 | 83.3% |
+| useMascot Hook | 21 | 19 | 2 | 0 | 10 | 90.5% |
+| useMascotTrigger | 5 | 5 | 0 | 0 | 0 | 100.0% |
+| Event Utility | 3 | 3 | 0 | 0 | 0 | 100.0% |
+| Integration | 10 | 10 | 0 | 0 | 0 | 100.0% |
+| Accessibility | 10 | 10 | 0 | 0 | 1 | 100.0% |
+| Performance | 7 | 3 | 4 | 0 | 0 | 42.9% |
+| **Total** | **158** | **146** | **12** | **0** | **15** | **92.4%** |
+
+### 3.2 Overall Match Rate
 
 ```
-+-----------------------------------------------+
-|  Overall Match Rate: 97.0%                     |
-+-----------------------------------------------+
-|  Total Items:     131                          |
-|  Match:           124 items (94.7%)            |
-|  Changed:           7 items ( 5.3%)            |
-|  Missing:           0 items ( 0.0%)            |
-|  Added:             0 items ( 0.0%)            |
-+-----------------------------------------------+
++---------------------------------------------+
+|  Overall Match Rate: 92.4%  (146/158)        |
++---------------------------------------------+
+|  Match:    146 items (92.4%)                 |
+|  Changed:   12 items (7.6%)                  |
+|  Missing:    0 items (0.0%)                  |
+|  Added:     15 items (not counted against)   |
++---------------------------------------------+
 ```
 
-### Category Breakdown
+### 3.3 Overall Scores
 
-| Category | Items | Match | Changed | Missing | Rate |
-|----------|:-----:|:-----:|:-------:|:-------:|:----:|
-| Type Definitions | 6 | 6 | 0 | 0 | 100% |
-| SVG Character | 17 | 17 | 0 | 0 | 100% |
-| CSS Animations | 12 | 12 | 0 | 0 | 100% |
-| Phrase Data | 11 | 9 | 2 | 0 | 81.8% |
-| Event System | 3 | 3 | 0 | 0 | 100% |
-| useMascot Hook | 15 | 14 | 1 | 0 | 93.3% |
-| useMascotTrigger | 4 | 4 | 0 | 0 | 100% |
-| KimchiMascotContainer | 11 | 10 | 1 | 0 | 90.9% |
-| MascotSpeech | 10 | 9 | 1 | 0 | 90.0% |
-| MascotToggle | 7 | 6 | 1 | 0 | 85.7% |
-| useChat Integration | 6 | 5 | 1 | 0 | 83.3% |
-| DocumentUpload Integration | 2 | 2 | 0 | 0 | 100% |
-| page.tsx Integration | 3 | 3 | 0 | 0 | 100% |
-| i18n | 12 | 12 | 0 | 0 | 100% |
-| File Structure | 9 | 9 | 0 | 0 | 100% |
-| **Total** | **131** | **124** | **7** | **0** | **97.0%** |
+| Category | Score | Status |
+|----------|:-----:|:------:|
+| Design Match | 92.4% | [PASS] |
+| Architecture Compliance | 100% | [PASS] |
+| Convention Compliance | 100% | [PASS] |
+| Accessibility Compliance | 100% | [PASS] |
+| **Overall** | **92.4%** | **[PASS]** |
 
 ---
 
-## 4. Detailed Change List
+## 4. Differences Found
 
-### 4.1 Changed Items (Design != Implementation) -- All Intentional
+### 4.1 Changed Features (Design != Implementation) -- 12 items
 
-| # | Item | Design | Implementation | Impact | Assessment |
-|---|------|--------|----------------|--------|------------|
-| 1 | Phrase count (design summary) | "48" in Section 13.3 | 47 phrases (7+8+7+7+6+6+6) | Low | Design summary has minor arithmetic error; actual data has 47 phrases in both design and impl |
-| 2 | lastPhraseIndex declaration | `let lastPhraseIndex: Record<string, number> = {}` | `const lastPhraseIndex: Record<string, number> = {}` | None | `const` is correct since the Record object itself is mutated, not reassigned |
-| 3 | checkNightMode | Separate `useCallback` function called from useEffect | Inline logic in useEffect | None | Simpler code; avoids unnecessary useCallback overhead |
-| 4 | KimchiMascotContainer unused import | `import { useCallback }` in design code | Not imported | None | Cleaner; useCallback was not used in the component |
-| 5 | MascotSpeech outer div | `max-w-[180px] px-3 py-2 rounded-xl ...` | Adds `relative` class | None | Required for the absolutely-positioned tail `div`. Design omitted this. |
-| 6 | MascotToggle menu button text | `...` (ASCII dots) | `...` (Unicode middle dots) | None | Visual styling choice; functionally identical |
-| 7 | useChat design description | Section 8.3 title says "3 lines added" | 4 dispatch points + 1 import = 5 additions | None | Design title is inaccurate; the design body correctly specifies 4 dispatches |
+| # | Item | Design | Implementation | Impact | Category |
+|:-:|------|--------|----------------|:------:|----------|
+| 1 | Container wrapper element | `<div>` | `<motion.div>` | Medium | Framer Motion migration |
+| 2 | Container import: `useCallback` | Imported (unused) | Correctly omitted | None | Code cleanup |
+| 3 | useMascot return fields | 8 fields | 9 fields (+position) | Low | Framer Motion addition |
+| 4 | useMascot night mode | Separate `checkNightMode` useCallback | Inline in useEffect | None | Simplification |
+| 5 | Phrase count in Section 13.3 | "48 phrases" | 47 phrases (7+8+7+7+6+6+6) | None | Design doc typo |
+| 6 | `lastPhraseIndex` declaration | `let` | `const` | None | `const` is correct (Record ref unchanged) |
+| 7 | MascotSpeech `relative` class | Not present | Added on container div | None | Needed for tail positioning |
+| 8 | MascotToggle dots text | `...` (regular dots) | `...` (Unicode middle dots) | None | Minor visual |
+| 9 | Dependencies: additional packages | "None" | `framer-motion` ^12.34.3 | **High** | Design principle violation |
+| 10 | Animation mode | "CSS-only, 0ms JS cost" | CSS + Framer Motion spring for position | **Medium** | No longer pure CSS |
+| 11 | JS animation cost | 0ms | Spring physics computation per frame | Medium | Performance deviation |
+| 12 | Bundle size | ~4KB gzipped | ~4KB + framer-motion (~30-40KB gzipped) | **Medium** | 10x design estimate exceeded |
 
-**All 7 changes are minor and intentional improvements.** No functional gaps exist.
+### 4.2 Classification of Changes
+
+#### Intentional Minor Improvements (Items 2, 4, 5, 6, 7, 8) -- 6 items
+These are code quality improvements or design doc typos. No functional impact. No action needed.
+
+#### Framer Motion Addition (Items 1, 3, 9, 10, 11, 12) -- 6 items
+These are all consequences of the Framer Motion free-flight feature addition.
+This constitutes a **feature expansion** beyond the original design scope.
+
+### 4.3 Added Features (Design X, Implementation O) -- 15 items
+
+| # | Item | Implementation Location | Description |
+|:-:|------|------------------------|-------------|
+| 1 | `framer-motion` dependency | `package.json` | Animation library for position spring physics |
+| 2 | `SPRING` constant | `KimchiMascotContainer.tsx:11` | `{ type: 'spring', stiffness: 45, damping: 9, mass: 1.3 }` |
+| 3 | `motion.div` wrapper | `KimchiMascotContainer.tsx:42` | Replaces static div for animated positioning |
+| 4 | `animate={{ x, y }}` prop | `KimchiMascotContainer.tsx:45` | Position animation binding |
+| 5 | `transition={SPRING}` prop | `KimchiMascotContainer.tsx:46` | Spring physics configuration |
+| 6 | `position` state | `useMascot.ts:67` | `{ x: number, y: number }` for fly target |
+| 7 | `getRandomFlyTarget()` | `useMascot.ts:21-29` | Random viewport position with reduced-motion guard |
+| 8 | `SHOULD_FLY` table | `useMascot.ts:33-41` | Per-state fly/stay-home decision |
+| 9 | `flyTimersRef` | `useMascot.ts:69` | Timer array for celebrating multi-point flight |
+| 10 | Fly logic in setState | `useMascot.ts:101-114` | Conditional position update per state |
+| 11 | Celebrating 3-point flight | `useMascot.ts:102-107` | 0ms/700ms/1400ms sequential positions |
+| 12 | Home return on idle/sleeping | `useMascot.ts:112-113` | `setPosition({ x: 0, y: 0 })` |
+| 13 | Home return on auto-reset | `useMascot.ts:121` | Position reset when returning to idle |
+| 14 | `prefers-reduced-motion` guard in fly | `useMascot.ts:23` | Returns {0,0} -- accessibility-safe |
+| 15 | flyTimersRef cleanup | `useMascot.ts:88,151` | Both in setState and unmount effect |
+
+### 4.4 Missing Features (Design O, Implementation X) -- 0 items
+
+No missing features. All design requirements are fully implemented.
 
 ---
 
-## 5. Architecture Compliance
+## 5. Framer Motion Impact Assessment
 
-### 5.1 Layer Structure (Dynamic Level)
+### 5.1 Design Principle Compliance
 
-| Layer | Files | Status |
-|-------|-------|--------|
-| Domain (types/) | `types/mascot.ts` | Match |
-| Infrastructure (lib/) | `lib/utils/mascot-event.ts` | Match |
-| Presentation (components/) | `components/mascot/*.tsx`, `components/mascot/mascot-phrases.ts` | Match |
-| Presentation (hooks/) | `hooks/useMascot.ts`, `hooks/useMascotTrigger.ts` | Match |
+| Design Principle | Compliance | Assessment |
+|------------------|:----------:|------------|
+| Single Responsibility | [PASS] | Fly logic properly contained in useMascot hook |
+| Pure CSS Animation | **[PARTIAL]** | CSS animations still used for character state; position movement uses Framer Motion JS spring |
+| Event-Driven Decoupling | [PASS] | Fly targets are derived from state change events (same CustomEvent flow) |
+| Progressive Enhancement | [PASS] | Mascot OFF still works; reduced-motion disables flight; flight is additive |
 
-### 5.2 Dependency Direction
+### 5.2 Performance Impact
 
-| From | To | Valid | Notes |
-|------|----|-------|-------|
-| KimchiMascotContainer | useMascot, useMascotTrigger | Yes | Presentation -> Presentation (hooks) |
-| KimchiSvg | types/mascot | Yes | Presentation -> Domain |
-| useMascot | mascot-phrases, types/mascot | Yes | Presentation -> Domain |
-| useMascotTrigger | types/mascot | Yes | Presentation -> Domain |
-| mascot-event.ts | types/mascot | Yes | Infrastructure -> Domain |
-| useChat | mascot-event | Yes | Presentation -> Infrastructure |
-| DocumentUpload | mascot-event | Yes | Presentation -> Infrastructure |
+| Metric | Design Target | With Framer Motion | Status |
+|--------|:------------:|:------------------:|:------:|
+| LCP impact | +0ms | +0ms (lazy client component) | [PASS] |
+| CLS | 0 | 0 (position:fixed) | [PASS] |
+| Bundle size | <5KB | ~35-45KB total (framer-motion tree-shaken) | **[FAIL]** |
+| JS animation cost | 0ms | ~0.5-2ms per frame during flight (spring calc) | **[PARTIAL]** |
+| 60fps | Yes | Yes (GPU-accelerated transform via spring) | [PASS] |
+| Memory leaks | None | `flyTimersRef` cleanup prevents leaks | [PASS] |
 
-**Architecture Score: 100%** -- No dependency violations.
+### 5.3 Accessibility Impact
 
-### 5.3 Event-Driven Decoupling Assessment
+| Concern | Mitigated? | How |
+|---------|:----------:|-----|
+| Motion sickness from flight | Yes | `prefers-reduced-motion` check returns `{0,0}` |
+| Screen reader noise | N/A | Flight is visual only, no ARIA changes |
+| Focus management | N/A | Mascot is not focusable during flight |
 
-The design principle of Event-Driven Decoupling is fully implemented:
-- Business logic (useChat, DocumentUpload) dispatches events only -- no direct mascot dependency
-- Mascot system receives via CustomEvent -- no dependency on business logic
-- Integration is non-invasive: existing code changes are minimal (import + 1-line dispatch calls)
+### 5.4 Verdict
+
+The Framer Motion addition is a **positive UX enhancement** that adds personality and delight.
+However, it violates 2 original design principles:
+
+1. **"Pure CSS Animation"** -- Position animation now requires JavaScript
+2. **"No additional packages"** -- framer-motion is a significant addition (~30-40KB gzipped)
+
+These violations are **intentional trade-offs** for the following benefits:
+- Spring physics creates natural, organic movement that CSS alone cannot achieve
+- The celebrating 3-point sequential flight adds excitement to document upload completion
+- Tree-shaking and lazy loading mitigate the bundle size impact
+- `prefers-reduced-motion` guard ensures accessibility compliance
 
 ---
 
-## 6. Convention Compliance
+## 6. Architecture Compliance
 
-### 6.1 Naming Convention
+| Principle | Status | Evidence |
+|-----------|:------:|---------|
+| Event-Driven Decoupling | [PASS] | CustomEvent flow unchanged; fly logic triggered from same event chain |
+| Component separation | [PASS] | All fly logic in useMascot.ts, not in Container component |
+| Dependency direction | [PASS] | hooks -> types, components -> hooks (no reverse) |
+| No business logic coupling | [PASS] | useChat only dispatches events, no direct mascot import |
+| SSR safety | [PASS] | window checks in dispatchMascotEvent and getRandomFlyTarget |
 
-| Category | Convention | Files | Compliance |
-|----------|-----------|:-----:|:----------:|
-| Components | PascalCase | 4 (KimchiSvg, MascotSpeech, MascotToggle, KimchiMascotContainer) | 100% |
-| Hooks | use + camelCase | 2 (useMascot, useMascotTrigger) | 100% |
-| Data files | kebab-case.ts | 1 (mascot-phrases.ts) | 100% |
-| Utility | kebab-case.ts | 1 (mascot-event.ts) | 100% |
-| Types | camelCase.ts | 1 (mascot.ts) | 100% |
-| Constants | UPPER_SNAKE_CASE | STORAGE_KEY, DEFAULT_SETTINGS, STATE_RESET_DELAY, PHRASES | 100% |
-| Functions | camelCase | dispatchMascotEvent, getRandomPhrase, loadSettings, saveSettings | 100% |
+**Architecture Score: 100%**
 
-### 6.2 Folder Structure
+---
 
-| Expected Path | Exists | Contents Correct |
-|---------------|:------:|:----------------:|
-| `components/mascot/` | Yes | Yes (4 .tsx + 1 .ts) |
-| `hooks/` | Yes | Yes (2 hooks) |
-| `types/` | Yes | Yes (mascot.ts) |
-| `lib/utils/` | Yes | Yes (mascot-event.ts) |
+## 7. Convention Compliance
 
-### 6.3 Import Order
-
-All files follow the correct import order:
-1. External libraries (react)
-2. Internal absolute imports (@/...)
-3. Relative imports (./...)
-4. Type imports (import type)
+| Convention | Status | Evidence |
+|-----------|:------:|---------|
+| Components: PascalCase | [PASS] | KimchiMascotContainer, KimchiSvg, MascotSpeech, MascotToggle |
+| Hooks: camelCase with `use` prefix | [PASS] | useMascot, useMascotTrigger |
+| Types file: camelCase.ts | [PASS] | mascot.ts |
+| Utility: camelCase.ts | [PASS] | mascot-event.ts (kebab-case file, acceptable for lib/utils) |
+| Constants: UPPER_SNAKE_CASE | [PASS] | STORAGE_KEY, DEFAULT_SETTINGS, STATE_RESET_DELAY, SHOULD_FLY, SPRING |
+| Import order: external -> @/ -> ./ -> types | [PASS] | All files follow convention |
+| Folder: kebab-case | [PASS] | `components/mascot/`, `lib/utils/` |
 
 **Convention Score: 100%**
 
 ---
 
-## 7. Accessibility Compliance
+## 8. Design Document Updates Needed
 
-| WCAG Criterion | Design Spec | Implementation | Status |
-|----------------|-------------|----------------|--------|
-| 1.1.1 Non-text Content | SVG aria-hidden="true" | KimchiSvg line 78 | Match |
-| 2.3.3 prefers-reduced-motion | All animations disabled | globals.css line 267-284 (12 selectors) | Match |
-| 4.1.3 Status Messages | role="status" aria-live="polite" | MascotSpeech line 39-40 | Match |
-| 2.1.1 Keyboard | Toggle buttons focusable | MascotToggle has <button> elements | Match |
-| Container landmark | role="complementary" aria-label | KimchiMascotContainer line 40-41 | Match |
-| aria-atomic | true on speech | MascotSpeech line 41 | Match |
-| aria-expanded | Toggle menu state | MascotToggle line 56 | Match |
-| aria-label on buttons | "kimchi-kun turn on", "settings" | MascotToggle lines 40, 55 | Match |
+The following items should be updated in the design document to reflect the Framer Motion addition:
 
-**Accessibility Score: 100%**
+- [ ] Section 1.2: Update "Pure CSS Animation" principle to note position animation uses Framer Motion spring
+- [ ] Section 5.3: Update performance table -- bundle size now ~35-45KB, JS animation cost ~0.5-2ms during flight
+- [ ] Section 6.2: Update KimchiMascotContainer code to show `<motion.div>` and `position` prop
+- [ ] Section 6.5: Update useMascot code to include `position` state, `getRandomFlyTarget`, `SHOULD_FLY`, `flyTimersRef`
+- [ ] Section 13.2: Add `framer-motion` to dependencies table
+- [ ] Section 13.3: Fix phrase count from 48 to 47
+- [ ] New Section: Document free-flight behavior specification (SHOULD_FLY table, celebrating 3-point sequence, spring physics config)
 
 ---
 
-## 8. Overall Scores
+## 9. Comparison with Previous Analysis (v1.0 -> v2.0)
 
-| Category | Score | Status |
-|----------|:-----:|:------:|
-| Design Match | 97.0% | Pass |
-| Architecture Compliance | 100% | Pass |
-| Convention Compliance | 100% | Pass |
-| Accessibility Compliance | 100% | Pass |
-| **Overall** | **97.0%** | **Pass** |
+| Metric | v1.0 (Pre-flight) | v2.0 (Post-flight) | Delta |
+|--------|:-----------------:|:------------------:|:-----:|
+| Total items | 131 | 158 | +27 |
+| Match | 124 (94.7%) | 146 (92.4%) | -2.3% |
+| Changed | 7 (5.3%) | 12 (7.6%) | +5 items |
+| Missing | 0 (0%) | 0 (0%) | 0 |
+| Added (not counted) | 0 | 15 | +15 |
+| Architecture | 100% | 100% | 0 |
+| Convention | 100% | 100% | 0 |
 
-```
-+-----------------------------------------------+
-|  Overall Score: 97.0 / 100                     |
-+-----------------------------------------------+
-|  Design Match:         97.0%                   |
-|  Architecture:        100.0%                   |
-|  Convention:          100.0%                   |
-|  Accessibility:       100.0%                   |
-+-----------------------------------------------+
-```
-
----
-
-## 9. Missing Items
-
-None. All 131 design items have corresponding implementations.
+The match rate decreased by 2.3 percentage points due to the 6 Framer Motion-related changes.
+All 6 of the original "minor improvements" from v1.0 remain. The 6 new changes are all from the Framer Motion addition, which constitutes an intentional design expansion.
 
 ---
 
 ## 10. Recommended Actions
 
-### 10.1 Design Document Updates (Low Priority)
+### 10.1 Design Document Update (Low Priority)
 
-| # | Item | Location | Recommendation |
-|---|------|----------|----------------|
-| 1 | Phrase count in summary | design.md Section 13.3 | Change "48" to "47" |
-| 2 | useChat integration title | design.md Section 8.3 | Change "3 lines added" to "4 dispatches added" |
-| 3 | MascotSpeech missing `relative` | design.md Section 6.3 | Add `relative` class to outer div |
-| 4 | KimchiMascotContainer unused import | design.md Section 6.2 | Remove `import { useCallback }` |
+| Priority | Action | Notes |
+|:--------:|--------|-------|
+| Low | Update design doc to reflect Framer Motion addition | Record as intentional enhancement |
+| Low | Fix phrase count typo (48 -> 47) | Documentation accuracy |
 
-These are all minor documentation corrections. No code changes needed.
+### 10.2 No Code Changes Needed
 
----
+All implementation items are functionally correct. The Framer Motion addition is a UX improvement that trades minimal performance overhead for significant UX delight. No rollback is recommended.
 
-## 11. Test Scenario Verification
+### 10.3 Bundle Size Monitoring
 
-| TC-ID | Scenario | Design | Implementation Support | Status |
-|-------|----------|--------|----------------------|--------|
-| TC-M01 | Chat message: searching -> thinking -> success | Section 14.2 | useChat dispatches all 3 states | Pass |
-| TC-M02 | Document upload: celebrating | Section 14.2 | DocumentUpload dispatches celebrating | Pass |
-| TC-M03 | Server error: error state | Section 14.2 | useChat catch dispatches error | Pass |
-| TC-M04 | Night mode (22:00-06:00): sleeping | Section 14.2 | useMascot useEffect checks hour | Pass |
-| TC-M05 | Toggle OFF: mini restore button | Section 11.3 | KimchiMascotContainer conditional render | Pass |
-| TC-M06 | Speech OFF: animation only | Section 11.3 | settings.speechEnabled check in Container | Pass |
-| TC-M07 | Reload settings persistence | Section 11.3 | loadSettings from localStorage on mount | Pass |
-| TC-M08 | Screen reader: aria-live | Section 11.3 | MascotSpeech role="status" aria-live="polite" | Pass |
-| TC-M09 | Reduced motion: static | Section 11.3 | prefers-reduced-motion media query | Pass |
-| TC-M10 | Mobile layout: 40px, above BottomNav | Section 11.3 | w-[40px] md:w-[60px], bottom-20 lg:bottom-6 | Pass |
-
-**All 10 test scenarios: Pass**
+| Action | Priority | Notes |
+|--------|:--------:|-------|
+| Monitor framer-motion tree-shaking in production build | Medium | Verify only `motion.div` and spring animation code is included |
+| Consider dynamic import for mascot container | Low | Could further reduce initial bundle if needed |
 
 ---
 
-## 12. Next Steps
+## 11. Next Steps
 
-- [x] Gap analysis complete (97.0% match rate)
-- [ ] Update design document with 4 minor corrections (optional)
-- [ ] Manual QA testing (TC-M01 through TC-M10)
-- [ ] Generate completion report (`kimchi-mascot.report.md`)
+- [x] Gap analysis complete (v2.0)
+- [ ] Update design document with Framer Motion spec (optional)
+- [ ] Write completion report (`/pdca report kimchi-mascot`) if not already archived
 
 ---
 
@@ -492,4 +564,5 @@ These are all minor documentation corrections. No code changes needed.
 
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
-| 1.0 | 2026-02-28 | Initial analysis -- 97.0% match rate | gap-detector |
+| 1.0 | 2026-02-28 | Initial analysis (97.0%, 131 items) | gap-detector |
+| 2.0 | 2026-02-28 | Re-analysis with Framer Motion addition (92.4%, 158 items) | gap-detector |

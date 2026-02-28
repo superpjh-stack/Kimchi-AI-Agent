@@ -214,6 +214,73 @@ export class InMemoryVectorStore implements VectorStore {
 // DATABASE_URL 설정 시 pgvector, 미설정 시 인메모리
 // ──────────────────────────────────────────────
 
+// ──────────────────────────────────────────────
+// TenantVectorStore — 독립 Map을 가진 Per-Tenant 스토어
+// ──────────────────────────────────────────────
+
+class TenantVectorStore implements VectorStore {
+  readonly storageType = 'memory' as const;
+  private store = new Map<string, StoredEntry>();
+  private readonly maxChunks = 10_000;
+
+  addDocuments(chunks: Chunk[], vectors: number[][]): void {
+    for (let i = 0; i < chunks.length; i++) {
+      const key = `${chunks[i].metadata.docId}::${chunks[i].index}`;
+      this.store.set(key, { vector: vectors[i], chunk: chunks[i] });
+    }
+    if (this.store.size > this.maxChunks) {
+      const toDelete = [...this.store.keys()].slice(0, this.store.size - this.maxChunks);
+      toDelete.forEach((k) => this.store.delete(k));
+    }
+  }
+
+  search(queryVector: number[], options: { topK?: number; threshold?: number } = {}): SearchResult[] {
+    const topK = options.topK ?? 5;
+    const threshold = options.threshold ?? 0.3;
+    const scored: SearchResult[] = [];
+    for (const entry of this.store.values()) {
+      const score = cosineSimilarity(queryVector, entry.vector);
+      if (score >= threshold) scored.push({ chunk: entry.chunk, score });
+    }
+    return scored.sort((a, b) => b.score - a.score).slice(0, topK);
+  }
+
+  removeDocument(docId: string): void {
+    for (const key of this.store.keys()) {
+      if (key.startsWith(`${docId}::`)) this.store.delete(key);
+    }
+  }
+
+  getStoreSize(): number { return this.store.size; }
+
+  getChunkByKey(key: string): StoredEntry | undefined { return this.store.get(key); }
+
+  getDocumentStats(): DocumentStats {
+    const docIds = new Set<string>();
+    const byType: Record<string, number> = {};
+    for (const entry of this.store.values()) {
+      const { docId, docName } = entry.chunk.metadata;
+      if (!docIds.has(docId)) {
+        docIds.add(docId);
+        const ext = (docName.split('.').pop() ?? 'unknown').toLowerCase();
+        byType[ext] = (byType[ext] ?? 0) + 1;
+      }
+    }
+    return { total: docIds.size, byType, totalChunks: this.store.size, storageType: 'memory' };
+  }
+}
+
+/** tenantId별 독립 VectorStore 맵 */
+const _tenantStoreMap = new Map<string, TenantVectorStore>();
+
+/** Tenant별 격리된 InMemory VectorStore 반환 (TENANT_MODE=multi 용) */
+export function getVectorStoreForTenant(tenantId = 'default'): TenantVectorStore {
+  if (!_tenantStoreMap.has(tenantId)) {
+    _tenantStoreMap.set(tenantId, new TenantVectorStore());
+  }
+  return _tenantStoreMap.get(tenantId)!;
+}
+
 let _storeInstance: VectorStore | null = null;
 let _storeInitPromise: Promise<VectorStore> | null = null;
 

@@ -1,13 +1,15 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-02-28T13:47:27.410Z",
+  "lastUpdated": "2026-02-28T14:05:24.178Z",
   "archived": {
     "kimchi-mascot": {
       "phase": "archived",
-      "matchRate": 97,
+      "matchRate": 92.4,
       "iterationCount": 0,
+      "version": "2.0",
+      "note": "v2.0: Framer Motion 자유비행 추가. 이전 v1.0 matchRate: 97.0%",
       "startedAt": "2026-02-28T00:00:00.000Z",
-      "archivedAt": "2026-02-28T09:00:00.000Z",
+      "archivedAt": "2026-02-28T13:54:57.827Z",
       "archivedTo": "docs/archive/2026-02/kimchi-mascot/"
     }
   },
@@ -53,7 +55,10 @@
     "results",
     "api",
     "e2e",
-    "kimchi-agent-phase6 Gap Analysis"
+    "kimchi-agent-phase6 Gap Analysis",
+    "tenant",
+    "tenants",
+    "__tests__"
   ],
   "primaryFeature": "questions",
   "features": {
@@ -105,9 +110,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-27T13:18:23.689Z",
-        "lastUpdated": "2026-02-28T10:14:11.525Z"
+        "lastUpdated": "2026-02-28T14:02:49.960Z"
       },
-      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\lib\\rag\\bm25.ts"
+      "lastFile": "C:/AI Make/12 Kimchi-AI-Agent/Kimchi-AI-Agent/__tests__/lib/rag/pipeline.test.ts"
     },
     "stats": {
       "phase": "do",
@@ -131,9 +136,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-27T13:21:02.441Z",
-        "lastUpdated": "2026-02-28T13:42:00.594Z"
+        "lastUpdated": "2026-02-28T13:53:29.318Z"
       },
-      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\app\\api\\conversations\\[id]\\route.ts"
+      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\app\\api\\admin\\tenants\\[id]\\route.ts"
     },
     "process": {
       "phase": "do",
@@ -183,9 +188,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-27T14:36:05.173Z",
-        "lastUpdated": "2026-02-28T13:41:53.038Z"
+        "lastUpdated": "2026-02-28T14:05:24.178Z"
       },
-      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\hooks\\useMascot.ts"
+      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\lib\\utils\\markdown.ts"
     },
     "chat": {
       "phase": "do",
@@ -196,7 +201,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-27T14:39:09.257Z",
-        "lastUpdated": "2026-02-28T13:41:35.017Z"
+        "lastUpdated": "2026-02-28T13:55:02.629Z"
       },
       "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\app\\api\\chat\\route.ts"
     },
@@ -209,7 +214,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-27T14:59:55.573Z",
-        "lastUpdated": "2026-02-28T10:12:07.401Z"
+        "lastUpdated": "2026-02-28T13:54:42.970Z"
       },
       "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\lib\\db\\conversations-store.ts"
     },
@@ -222,9 +227,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-27T15:00:10.120Z",
-        "lastUpdated": "2026-02-28T13:41:51.160Z"
+        "lastUpdated": "2026-02-28T13:52:43.490Z"
       },
-      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\app\\api\\conversations\\route.ts"
+      "lastFile": "C:/AI Make/12 Kimchi-AI-Agent/Kimchi-AI-Agent/app/api/conversations/route.ts"
     },
     "ai": {
       "phase": "do",
@@ -274,9 +279,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-27T16:06:29.139Z",
-        "lastUpdated": "2026-02-28T00:17:39.969Z"
+        "lastUpdated": "2026-02-28T13:55:57.685Z"
       },
-      "lastFile": "C:/AI Make/12 Kimchi-AI-Agent/Kimchi-AI-Agent/lib/config/validate-env.ts"
+      "lastFile": "C:/AI Make/12 Kimchi-AI-Agent/Kimchi-AI-Agent/__tests__/lib/config/validate-env.test.ts"
     },
     "ml": {
       "phase": "do",
@@ -386,7 +391,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-28T00:14:48.078Z",
-        "lastUpdated": "2026-02-28T00:14:48.078Z"
+        "lastUpdated": "2026-02-28T13:52:03.083Z"
       },
       "lastFile": "C:/AI Make/12 Kimchi-AI-Agent/Kimchi-AI-Agent/lib/middleware/rate-limit.ts"
     },
@@ -453,9 +458,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-28T09:46:01.342Z",
-        "lastUpdated": "2026-02-28T13:41:20.090Z"
+        "lastUpdated": "2026-02-28T13:54:35.586Z"
       },
-      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\__tests__\\lib\\auth\\auth-middleware.test.ts"
+      "lastFile": "C:/AI Make/12 Kimchi-AI-Agent/Kimchi-AI-Agent/__tests__/lib/auth/credentials.test.ts"
     },
     "security": {
       "phase": "do",
@@ -583,9 +588,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-28T10:19:31.579Z",
-        "lastUpdated": "2026-02-28T13:44:27.854Z"
+        "lastUpdated": "2026-02-28T14:03:12.516Z"
       },
-      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\__tests__\\api\\conversations.test.ts"
+      "lastFile": "C:/AI Make/12 Kimchi-AI-Agent/Kimchi-AI-Agent/__tests__/api/chat.test.ts"
     },
     "e2e": {
       "phase": "do",
@@ -596,9 +601,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-28T10:20:05.907Z",
-        "lastUpdated": "2026-02-28T10:20:16.940Z"
+        "lastUpdated": "2026-02-28T13:56:33.543Z"
       },
-      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\e2e\\i18n.spec.ts"
+      "lastFile": "C:/AI Make/12 Kimchi-AI-Agent/Kimchi-AI-Agent/e2e/questions.spec.ts"
     },
     "kimchi-agent-phase6 Gap Analysis": {
       "phase": "act",
@@ -613,6 +618,45 @@
       },
       "previousPhase": "check",
       "autoAdvanced": true
+    },
+    "tenant": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-02-28T13:52:38.030Z",
+        "lastUpdated": "2026-02-28T13:55:36.232Z"
+      },
+      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\__tests__\\lib\\tenant\\tenant-middleware.test.ts"
+    },
+    "tenants": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-02-28T13:53:13.071Z",
+        "lastUpdated": "2026-02-28T13:53:13.071Z"
+      },
+      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\app\\api\\admin\\tenants\\route.ts"
+    },
+    "__tests__": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-02-28T13:55:43.484Z",
+        "lastUpdated": "2026-02-28T14:02:57.955Z"
+      },
+      "lastFile": "C:/AI Make/12 Kimchi-AI-Agent/Kimchi-AI-Agent/__tests__/lib/utils/markdown.test.ts"
     }
   },
   "pipeline": {
@@ -623,7 +667,7 @@
   "session": {
     "startedAt": "2026-02-27T12:14:33.087Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-02-28T13:47:27.410Z"
+    "lastActivity": "2026-02-28T14:05:24.178Z"
   },
   "pdca": {
     "kimchi-agent-phase3": {
@@ -3046,6 +3090,306 @@
       "timestamp": "2026-02-28T13:47:27.410Z",
       "feature": "kimchi-agent-phase6 Gap Analysis",
       "phase": "act",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:50:59.832Z",
+      "feature": "conversations",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:51:03.416Z",
+      "feature": "conversations",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:51:07.370Z",
+      "feature": "conversations",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:51:11.932Z",
+      "feature": "conversations",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:51:15.866Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:51:19.791Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:52:03.083Z",
+      "feature": "middleware",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:52:11.551Z",
+      "feature": "Kimchi-AI-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:52:25.289Z",
+      "feature": "Kimchi-AI-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:52:26.758Z",
+      "feature": "conversations",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:52:34.577Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:52:38.030Z",
+      "feature": "tenant",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:52:43.490Z",
+      "feature": "conversations",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:52:50.059Z",
+      "feature": "tenant",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:52:59.527Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:53:02.093Z",
+      "feature": "tenant",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:53:13.071Z",
+      "feature": "tenants",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:53:29.318Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:53:30.704Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:53:53.399Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:54:06.172Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:54:11.813Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:54:16.378Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:54:21.503Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:54:21.721Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:54:26.310Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:54:33.506Z",
+      "feature": "db",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:54:35.586Z",
+      "feature": "auth",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:54:42.970Z",
+      "feature": "db",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:54:54.920Z",
+      "feature": "chat",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:55:01.160Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:55:02.629Z",
+      "feature": "chat",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:55:17.671Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:55:23.300Z",
+      "feature": "tenant",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:55:36.232Z",
+      "feature": "tenant",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:55:43.484Z",
+      "feature": "__tests__",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:55:57.685Z",
+      "feature": "config",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:56:14.837Z",
+      "feature": "e2e",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:56:23.582Z",
+      "feature": "e2e",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:56:33.543Z",
+      "feature": "e2e",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:57:31.240Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:57:37.684Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T13:58:30.940Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T14:00:12.763Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T14:02:35.880Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T14:02:41.092Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T14:02:49.960Z",
+      "feature": "rag",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T14:02:57.955Z",
+      "feature": "__tests__",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T14:03:12.516Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T14:05:24.178Z",
+      "feature": "Kimchi-AI-Agent",
+      "phase": "do",
       "action": "updated"
     }
   ]

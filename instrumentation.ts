@@ -30,6 +30,19 @@ export async function register() {
       dsn: process.env.SENTRY_DSN,
       tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE ?? '0.1'),
       enabled: process.env.NODE_ENV === 'production',
+      // FR-11c: Edge 런타임 PII 필터 — authorization/cookie 헤더 및 IP 제거
+      beforeSend(event) {
+        if (event.user) {
+          delete event.user.ip_address;
+          delete event.user.email;
+        }
+        if (event.request?.headers) {
+          const h = event.request.headers as Record<string, unknown>;
+          delete h['authorization'];
+          delete h['cookie'];
+        }
+        return event;
+      },
     });
   }
 }

@@ -16,16 +16,22 @@ const AUTH = { authorization: 'Bearer valid' };
 describe('GET /api/conversations', () => {
   it('conversations 목록을 반환한다 (200)', async () => {
     const { GET } = await import('@/app/api/conversations/route');
-    const res = await GET(new Request('http://localhost/api/conversations'));
+    const res = await GET(new Request('http://localhost/api/conversations', { headers: AUTH }));
     expect(res.status).toBe(200);
     const body = await res.json();
     // ok() 래퍼: { data: { conversations: [...] }, meta: {...} }
     expect(Array.isArray(body.data?.conversations)).toBe(true);
   });
 
+  it('인증 없이 요청하면 401 반환', async () => {
+    const { GET } = await import('@/app/api/conversations/route');
+    const res = await GET(new Request('http://localhost/api/conversations'));
+    expect(res.status).toBe(401);
+  });
+
   it('?limit 파라미터를 처리한다', async () => {
     const { GET } = await import('@/app/api/conversations/route');
-    const res = await GET(new Request('http://localhost/api/conversations?limit=5'));
+    const res = await GET(new Request('http://localhost/api/conversations?limit=5', { headers: AUTH }));
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.meta?.limit).toBe(5);

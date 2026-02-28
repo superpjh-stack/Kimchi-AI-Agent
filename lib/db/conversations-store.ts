@@ -1,6 +1,7 @@
 // 대화 스토어 — 파일 기반 영구 저장 (.local-db/conversations.json)
 import { generateTitle, truncate } from '@/lib/utils/markdown';
 import { loadConversations, saveConversationsDebounced } from '@/lib/db/file-store';
+import { isMultiTenantEnabled } from '@/lib/tenant/tenant-middleware';
 import type { Conversation, Message } from '@/types';
 
 // S4-8: 최대 대화 수 제한 — 메모리 누수 방지
@@ -13,7 +14,7 @@ function save() {
   saveConversationsDebounced(conversationStore);
 }
 
-export function createConversationEntry(firstUserMessage: string): Conversation {
+export function createConversationEntry(firstUserMessage: string, tenantId = 'default'): Conversation {
   const now = new Date().toISOString();
   return {
     id: `conv_${crypto.randomUUID()}`,
@@ -22,7 +23,15 @@ export function createConversationEntry(firstUserMessage: string): Conversation 
     messageCount: 0,
     createdAt: now,
     updatedAt: now,
+    ...(isMultiTenantEnabled() ? { tenantId } : {}),
   };
+}
+
+/** tenantId 필터링 조회 (TENANT_MODE=multi 시 격리) */
+export function listConversations(tenantId = 'default'): Conversation[] {
+  const all = Array.from(conversationStore.values()).map((e) => e.conversation);
+  if (!isMultiTenantEnabled()) return all;
+  return all.filter((c) => (c as Conversation & { tenantId?: string }).tenantId === tenantId);
 }
 
 /** 대화 추가 + 파일 저장 */

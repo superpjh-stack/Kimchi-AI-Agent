@@ -6,7 +6,7 @@
 | kimchi-agent-phase3 | 91.0% | 2026-02-28 | 2026-02-28 | `docs/archive/2026-02/kimchi-agent-phase3/` |
 | kimchi-agent-phase4 | 93.9% | 2026-02-28 | 2026-02-28 | `docs/archive/2026-02/kimchi-agent-phase4/` |
 | kimchi-agent-phase5 | 98.2% | 2026-02-28 | 2026-02-28 | `docs/archive/2026-02/kimchi-agent-phase5/` |
-| kimchi-mascot | 97.0% | 2026-02-28 | 2026-02-28 | `docs/archive/2026-02/kimchi-mascot/` |
+| kimchi-mascot | 92.4% (v2.0) | 2026-02-28 | 2026-02-28 | `docs/archive/2026-02/kimchi-mascot/` |
 
 ## kimchi-agent-phase2
 
@@ -51,4 +51,4 @@
 - **Analysis**: `kimchi-mascot.analysis.md`
 - **Report**: `kimchi-mascot.report.md`
 
-**Summary**: 김치군(김치君) 마스코트 시스템 — 배추 SVG 캐릭터 + 7종 CSS 애니메이션 상태(idle/thinking/success/error/celebrating/searching/sleeping) + 47개 한국어 추임새 + CustomEvent 기반 완전 분리 아키텍처. CTO 5인팀, 신규 9파일 + 수정 6파일, 이터레이션 0회, Match Rate 97.0%.
+**Summary**: 김치군(김치君) 마스코트 시스템 v2.0 — 배추 SVG 캐릭터 + 7종 CSS 애니메이션 상태(idle/thinking/success/error/celebrating/searching/sleeping) + 47개 한국어 추임새 + CustomEvent 기반 완전 분리 아키텍처 + Framer Motion 자유비행(spring 물리, celebrating 3포인트 순차비행, prefers-reduced-motion 지원). 신규 9파일 + 수정 8파일, 이터레이션 0회, Match Rate v1.0: 97.0% → v2.0: 92.4% (의도적 기능 확장).

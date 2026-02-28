@@ -11,10 +11,10 @@ export function stripMarkdown(text: string): string {
     // Remove bold/italic
     .replace(/\*{1,3}([^*]+)\*{1,3}/g, '$1')
     .replace(/_{1,3}([^_]+)_{1,3}/g, '$1')
+    // Remove code blocks (must come before inline code removal)
+    .replace(/```[\s\S]*?```/g, '')
     // Remove inline code
     .replace(/`([^`]+)`/g, '$1')
-    // Remove code blocks
-    .replace(/```[\s\S]*?```/g, '')
     // Remove links — keep display text
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
     // Remove images
