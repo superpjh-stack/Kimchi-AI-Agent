@@ -137,11 +137,18 @@ data: {"type":"error","message":"..."}
 - .eslintrc.json: no-console rule
 - exceljs로 xlsx 교체 (CVE 해결)
 
-#### Sprint 2 진행 중 (테스트 + 배포)
-- 테스트: 61 → 132개 (auth 21개 + security 50개 추가) — commit 971b346
-- 추가 필요: Playwright E2E, Lighthouse CI, Vercel 재배포
+#### Sprint 2 완료 (테스트 + 배포) — commit 971b346 + cde6aaf
+- 테스트: 61 → 164개 (auth 21개 + security 50개 + api 7개 + ab-manager 17개 추가)
+- playwright.config.ts + e2e/chat.spec.ts + e2e/i18n.spec.ts
+- .github/workflows/e2e.yml + lighthouse.yml
 
-#### Sprint 3 대기: ML A/B 테스트 프레임워크
+#### Sprint 3 완료 (ML A/B 테스트) — commit cde6aaf
+- lib/ml/ab-test.ts: Experiment/Variant/Assignment 타입
+- lib/ml/ab-manager.ts: ExperimentManager (djb2 해시 기반 결정론적 배분)
+- app/api/ml/experiments/: POST/GET + [id] GET/PATCH + [id]/results GET
+- components/ml/ABTestWidget.tsx: 대시보드 위젯 (30s 폴링)
+- lib/ml/predictor-factory.ts: createPredictor() A/B variant 분기 추가
+
 #### Sprint 4 대기: Multi-tenant AsyncLocalStorage
 
 ### 환경 변수 추가 필요 (Phase 6)
