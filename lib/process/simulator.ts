@@ -16,6 +16,39 @@ export class SimulatorClient implements SensorClient {
     this.batchId = `BATCH-${today}`;
     // 0~60시간 전 무작위 시작 (발효 진행 중 시뮬레이션)
     this.batchStartMs = Date.now() - Math.floor(Math.random() * 60 * 3600_000);
+
+    // Seed data: 10개 초기 이력 (30분 간격, 5시간 전 ~ 30분 전)
+    // 발효 진행에 따라 온도↓ 습도↑ 염도 안정 pH↓ 패턴
+    const seedBase = [
+      { temperature: 22.4, humidity: 74.8, salinity: 2.18, ph: 4.98 },
+      { temperature: 21.9, humidity: 75.6, salinity: 2.21, ph: 4.89 },
+      { temperature: 21.5, humidity: 76.4, salinity: 2.23, ph: 4.79 },
+      { temperature: 21.2, humidity: 77.3, salinity: 2.20, ph: 4.71 },
+      { temperature: 20.8, humidity: 78.1, salinity: 2.24, ph: 4.63 },
+      { temperature: 20.5, humidity: 79.0, salinity: 2.22, ph: 4.56 },
+      { temperature: 20.1, humidity: 79.8, salinity: 2.25, ph: 4.48 },
+      { temperature: 19.8, humidity: 80.5, salinity: 2.23, ph: 4.41 },
+      { temperature: 19.5, humidity: 81.2, salinity: 2.26, ph: 4.35 },
+      { temperature: 19.3, humidity: 81.9, salinity: 2.24, ph: 4.29 },
+    ];
+    const intervalMs = 30 * 60 * 1000; // 30분
+    const seedCount = seedBase.length;
+    seedBase.forEach((s, i) => {
+      const offsetMs = (seedCount - i) * intervalMs;
+      this.history.push({
+        temperature: s.temperature,
+        humidity:    s.humidity,
+        salinity:    s.salinity,
+        ph:          s.ph,
+        timestamp:   new Date(Date.now() - offsetMs).toISOString(),
+      });
+    });
+    // 기준값을 마지막 seed 값으로 맞춤
+    const last = seedBase[seedBase.length - 1];
+    this.tempBase  = last.temperature;
+    this.humidBase = last.humidity;
+    this.saltBase  = last.salinity;
+    this.phBase    = last.ph;
   }
 
   async getCurrentData(): Promise<SensorData> {
