@@ -27,6 +27,13 @@ export function useConversations() {
     fetchConversations();
   }, [fetchConversations]);
 
+  const deleteConversation = useCallback(async (id: string): Promise<void> => {
+    const res = await fetch(`/api/conversations/${id}`, { method: 'DELETE' });
+    if (!res.ok) return;
+    setConversations((prev) => prev.filter((c) => c.id !== id));
+    setActiveId((prev) => (prev === id ? null : prev));
+  }, []);
+
   const createConversation = useCallback(async (): Promise<string> => {
     const res = await fetch('/api/conversations', {
       method: 'POST',
@@ -55,6 +62,7 @@ export function useConversations() {
     activeId,
     setActiveId,
     createConversation,
+    deleteConversation,
     refresh: fetchConversations,
   };
 }

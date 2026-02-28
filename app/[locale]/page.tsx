@@ -30,6 +30,7 @@ export default function HomePage() {
     conversations,
     activeId,
     setActiveId,
+    deleteConversation,
     refresh: refreshConversations,
   } = useConversations();
 
@@ -62,6 +63,13 @@ export default function HomePage() {
     setBottomTab('chat');
   };
 
+  const handleDeleteConversation = (id: string) => {
+    deleteConversation(id);
+    if (activeId === id) {
+      clearMessages();
+    }
+  };
+
   const handleSelectQuestion = (question: string) => {
     sendMessage(question);
     // Switch to chat tab on mobile
@@ -79,6 +87,7 @@ export default function HomePage() {
         activeId={activeId ?? undefined}
         onNewChat={handleNewChat}
         onSelectConversation={handleSelectConversation}
+        onDelete={handleDeleteConversation}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         criticalAlerts={criticalCount}

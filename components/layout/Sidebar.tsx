@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
-import { Plus, FileText, Settings, X, Search } from 'lucide-react';
+import { Plus, FileText, Settings, X, Search, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Conversation } from '@/types';
 import AlertBadge from '@/components/process/AlertBadge';
@@ -13,6 +13,7 @@ interface SidebarProps {
   activeId?: string;
   onNewChat: () => void;
   onSelectConversation: (id: string) => void;
+  onDelete?: (id: string) => void;
   isOpen?: boolean;
   onClose?: () => void;
   criticalAlerts?: number;
@@ -58,6 +59,7 @@ export default function Sidebar({
   activeId,
   onNewChat,
   onSelectConversation,
+  onDelete,
   isOpen = true,
   onClose,
   criticalAlerts = 0,
@@ -174,23 +176,50 @@ export default function Sidebar({
                 </p>
                 <div className="space-y-0.5">
                   {group.items.map((conv) => (
-                    <button
+                    <div
                       key={conv.id}
-                      type="button"
-                      onClick={() => onSelectConversation(conv.id)}
                       className={clsx(
-                        'w-full text-left px-3 py-2.5 rounded-xl transition-all duration-150 group',
+                        'flex items-center rounded-xl transition-all duration-150 group',
                         {
-                          'bg-kimchi-red/10 text-kimchi-red border border-kimchi-red/20': activeId === conv.id,
-                          'text-brand-text-primary hover:bg-kimchi-cream': activeId !== conv.id,
+                          'bg-kimchi-red/10 border border-kimchi-red/20': activeId === conv.id,
+                          'hover:bg-kimchi-cream': activeId !== conv.id,
                         }
                       )}
                     >
-                      <p className="text-sm font-medium truncate">{conv.title}</p>
-                      <p className="text-xs text-brand-text-muted truncate mt-0.5">
-                        {conv.lastMessage}
-                      </p>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => onSelectConversation(conv.id)}
+                        className={clsx(
+                          'flex-1 min-w-0 text-left px-3 py-2.5',
+                          {
+                            'text-kimchi-red': activeId === conv.id,
+                            'text-brand-text-primary': activeId !== conv.id,
+                          }
+                        )}
+                      >
+                        <p className="text-sm font-medium truncate">{conv.title}</p>
+                        <p className="text-xs text-brand-text-muted truncate mt-0.5">
+                          {conv.lastMessage}
+                        </p>
+                      </button>
+                      {onDelete && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm(t('deleteConfirm'))) {
+                              onDelete(conv.id);
+                            }
+                          }}
+                          aria-label={t('deleteConversation')}
+                          className="shrink-0 mr-1.5 p-1.5 rounded-lg text-brand-text-muted
+                            opacity-0 group-hover:opacity-100 sm:opacity-100
+                            hover:text-kimchi-red hover:bg-kimchi-red/10 transition-all duration-150"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>

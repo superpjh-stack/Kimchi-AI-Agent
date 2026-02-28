@@ -122,3 +122,5 @@ data: {"type":"error","message":"..."}
 - Phase 3 Plan: `docs/01-plan/features/kimchi-agent-phase3.plan.md`
 - Phase 3 Design: `docs/02-design/features/kimchi-agent-phase3.design.md`
 - Phase 3 Analysis: `docs/03-analysis/kimchi-agent-phase3.analysis.md` (Match Rate: 91.0%)
+- Mascot Plan: `docs/01-plan/features/kimchi-mascot.plan.md`
+- Mascot Design: `docs/02-design/features/kimchi-mascot.design.md`

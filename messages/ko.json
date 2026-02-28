@@ -24,6 +24,8 @@
     "older": "이전",
     "searchPlaceholder": "대화 검색...",
     "noConversations": "대화가 없습니다",
+    "deleteConversation": "대화 삭제",
+    "deleteConfirm": "이 대화를 삭제하시겠습니까?",
     "documentManagement": "문서 관리",
     "settings": "설정"
   },

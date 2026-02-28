@@ -24,6 +24,8 @@
     "older": "Older",
     "searchPlaceholder": "Search conversations...",
     "noConversations": "No conversations",
+    "deleteConversation": "Delete conversation",
+    "deleteConfirm": "Delete this conversation?",
     "documentManagement": "Document Manager",
     "settings": "Settings"
   },
