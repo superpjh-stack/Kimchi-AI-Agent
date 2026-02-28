@@ -83,32 +83,41 @@ export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) 
   if (!isSupported) return null;
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      disabled={disabled || voiceState === 'processing'}
-      title={voiceState === 'listening' ? '녹음 중지' : '음성 입력'}
-      className={clsx(
-        'relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-kimchi-orange',
-        {
-          'bg-kimchi-beige hover:bg-kimchi-beige-dark text-brand-text-secondary': voiceState === 'idle' && !disabled,
-          'bg-kimchi-red text-white recording-pulse': voiceState === 'listening',
-          'bg-kimchi-beige text-brand-text-muted cursor-not-allowed': voiceState === 'processing' || disabled,
-        }
-      )}
-    >
-      {voiceState === 'processing' ? (
-        <Loader2 size={18} className="animate-spin" />
-      ) : voiceState === 'listening' ? (
-        <>
+    <span className="relative inline-flex">
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={disabled || voiceState === 'processing'}
+        title={voiceState === 'listening' ? '녹음 중지' : '음성 입력'}
+        className={clsx(
+          'relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-kimchi-orange',
+          {
+            'bg-kimchi-beige hover:bg-kimchi-beige-dark text-brand-text-secondary': voiceState === 'idle' && !disabled,
+            'bg-kimchi-red text-white recording-pulse': voiceState === 'listening',
+            'bg-kimchi-beige text-brand-text-muted cursor-not-allowed': voiceState === 'processing' || disabled,
+          }
+        )}
+      >
+        {voiceState === 'processing' ? (
+          <Loader2 size={18} className="animate-spin" />
+        ) : voiceState === 'listening' ? (
+          <>
+            <Mic size={18} />
+            {/* Recording indicator dot */}
+            <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 bg-white rounded-full border-2 border-kimchi-red animate-pulse" />
+          </>
+        ) : (
           <Mic size={18} />
-          {/* Recording indicator dot */}
-          <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 bg-white rounded-full border-2 border-kimchi-red animate-pulse" />
-        </>
-      ) : (
-        <Mic size={18} />
-      )}
-    </button>
+        )}
+      </button>
+      <span
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {voiceState === 'listening' ? '음성 녹음 중' : voiceState === 'processing' ? '음성 처리 중' : ''}
+      </span>
+    </span>
   );
 }

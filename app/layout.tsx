@@ -1,7 +1,14 @@
 import type { Metadata } from 'next';
+import { Noto_Sans_KR } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
+
+const notoSansKR = Noto_Sans_KR({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '700'],
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: '김치공장 AI 도우미 — 김치 제조 전문 어시스턴트',
@@ -14,15 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="ko" className={notoSansKR.className}>
       <body className="h-screen overflow-hidden">
         {children}
         <Analytics />

@@ -74,11 +74,13 @@ export default function Header({
       <div className="flex-1 min-w-0 flex items-center gap-1">
         <h2 className="lg:hidden text-sm font-medium text-brand-text-primary truncate">{title}</h2>
         {/* 데스크톱 탭 스위처 */}
-        <div className="hidden lg:flex items-center gap-1">
+        <div className="hidden lg:flex items-center gap-1" role="tablist" aria-label="메인 탭">
           {DESKTOP_TABS.map(({ id, label }) => (
             <button
               key={id}
               type="button"
+              role="tab"
+              aria-selected={activeTab === id}
               onClick={() => onTabChange?.(id)}
               className={clsx(
                 'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',

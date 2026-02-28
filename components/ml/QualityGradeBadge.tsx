@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import clsx from 'clsx';
 
 interface Props {
@@ -15,7 +16,7 @@ const GRADE_STYLES = {
 
 const GRADE_LABELS = { A: '최상', B: '양호', C: '주의' };
 
-export default function QualityGradeBadge({ grade, confidence }: Props) {
+function QualityGradeBadge({ grade, confidence }: Props) {
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs text-gray-500">품질 등급</span>
@@ -30,3 +31,5 @@ export default function QualityGradeBadge({ grade, confidence }: Props) {
     </div>
   );
 }
+
+export default React.memo(QualityGradeBadge);

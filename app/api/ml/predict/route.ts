@@ -1,4 +1,5 @@
 // POST /api/ml/predict — 발효 완성도 예측 (30초 캐시)
+import * as Sentry from '@sentry/nextjs';
 import { ok, err } from '@/lib/utils/api-response';
 import { getPredictor } from '@/lib/ml/predictor-factory';
 import { PredictionCache, makeFermentationKey } from '@/lib/ml/prediction-cache';
@@ -48,7 +49,15 @@ export async function POST(req: Request): Promise<Response> {
 
   try {
     const predictor = getPredictor();
-    const prediction = await predictor.predictFermentation(body.sensors);
+    const prediction = await Sentry.startSpan(
+      { op: 'ml.predict', name: 'ML Fermentation Prediction' },
+      async (span) => {
+        const result = await predictor.predictFermentation(body.sensors);
+        span.setAttribute('ml.confidence', result.confidence);
+        span.setAttribute('ml.anomaly', result.anomaly);
+        return result;
+      }
+    );
     cache.set(cacheKey, prediction);
 
     // 예측 이력 저장

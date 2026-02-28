@@ -50,6 +50,29 @@ export default function DashboardPanel() {
           <MLPredictionWidget sensors={sensors} />
         </div>
 
+        {/* 베타 만족도 위젯 (FR-06) */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="text-base">⭐</span>
+            <h3 className="text-sm font-semibold text-gray-700">베타 피드백</h3>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-gray-500">현재 만족도</span>
+            <div className="flex items-center gap-0.5" aria-label="만족도 4점 (5점 만점)">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span
+                  key={star}
+                  className={star <= 4 ? 'text-amber-400 text-lg' : 'text-gray-300 text-lg'}
+                  aria-hidden="true"
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+            <span className="text-xs font-medium text-gray-600">4.0 / 5.0</span>
+          </div>
+        </div>
+
         {/* 하단: 센서 시계열 차트 4개 */}
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center gap-1.5 mb-3">
