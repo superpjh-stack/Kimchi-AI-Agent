@@ -2,6 +2,7 @@
 import { ok, err } from '@/lib/utils/api-response';
 import { getPredictor } from '@/lib/ml/predictor-factory';
 import { PredictionCache, makeFermentationKey } from '@/lib/ml/prediction-cache';
+import { predictionHistory } from '@/lib/ml/prediction-history';
 import type { SensorData } from '@/lib/process/sensor-client';
 import type { FermentationPrediction } from '@/lib/ml/predictor';
 
@@ -31,6 +32,20 @@ export async function POST(req: Request): Promise<Response> {
     const predictor = getPredictor();
     const prediction = await predictor.predictFermentation(body.sensors);
     cache.set(cacheKey, prediction);
+
+    // 예측 이력 저장
+    predictionHistory.add({
+      type: 'fermentation',
+      input: {
+        temperature: body.sensors.temperature,
+        salinity: body.sensors.salinity,
+        ph: body.sensors.ph,
+        fermentationHours: body.sensors.fermentationHours,
+      },
+      confidence: prediction.confidence,
+      result: prediction.stage,
+    });
+
     return ok({ batchId: body.batchId ?? body.sensors.batchId, ...prediction, cached: false });
   } catch (e) {
     console.error('[/api/ml/predict]', e);

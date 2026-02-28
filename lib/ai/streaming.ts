@@ -32,6 +32,15 @@ export function createSSEStream(
     async start(controller) {
       let fullText = '';
 
+      // Keep-alive ping every 15 seconds to prevent connection timeouts
+      const keepAlive = setInterval(() => {
+        try {
+          controller.enqueue(encoder.encode(': ping\n\n'));
+        } catch {
+          // Stream may already be closed; ignore enqueue errors
+        }
+      }, 15_000);
+
       try {
         // MessageStream is an EventEmitter AND AsyncIterable.
         // Iterating yields MessageStreamEvent objects.
@@ -74,6 +83,7 @@ export function createSSEStream(
         };
         controller.enqueue(encoder.encode(sendSSEEvent(errorEvent)));
       } finally {
+        clearInterval(keepAlive);
         controller.close();
       }
     },

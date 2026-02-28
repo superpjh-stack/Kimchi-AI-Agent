@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
-import { Plus, FileText, Settings, MessageSquare, X } from 'lucide-react';
+import { Plus, FileText, Settings, X, Search } from 'lucide-react';
 import { Conversation } from '@/types';
 import AlertBadge from '@/components/process/AlertBadge';
 
@@ -59,6 +59,8 @@ export default function Sidebar({
   criticalAlerts = 0,
   warningAlerts = 0,
 }: SidebarProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+
   // Close on escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -68,7 +70,13 @@ export default function Sidebar({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  const groups = groupConversationsByDate(conversations);
+  const filteredConversations = searchQuery.trim()
+    ? conversations.filter((c) =>
+        c.title.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : conversations;
+
+  const groups = groupConversationsByDate(filteredConversations);
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-white border-r border-kimchi-beige-dark w-64 lg:w-72">
@@ -112,6 +120,23 @@ export default function Sidebar({
         </button>
       </div>
 
+      {/* Search Input */}
+      <div className="px-3 pb-2">
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-muted pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="대화 검색..."
+            className="w-full pl-8 pr-3 py-2 text-xs rounded-lg border border-kimchi-beige-dark bg-kimchi-cream
+              text-brand-text-primary placeholder-brand-text-muted
+              focus:outline-none focus:ring-2 focus:ring-kimchi-orange/50 focus:border-transparent
+              transition-all duration-200"
+          />
+        </div>
+      </div>
+
       {/* Conversation List */}
       <div className="flex-1 overflow-y-auto px-2 pb-2">
         {conversations.length === 0 ? (
@@ -119,6 +144,12 @@ export default function Sidebar({
             <div className="text-4xl mb-3 animate-float">🥬</div>
             <p className="text-sm text-brand-text-secondary font-medium">아직 대화가 없어요</p>
             <p className="text-xs text-brand-text-muted mt-1">김치에 대해 무엇이든 물어보세요!</p>
+          </div>
+        ) : filteredConversations.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="text-3xl mb-3">🔍</div>
+            <p className="text-sm text-brand-text-secondary font-medium">검색 결과 없음</p>
+            <p className="text-xs text-brand-text-muted mt-1">다른 검색어를 입력해보세요</p>
           </div>
         ) : (
           <div className="space-y-4">

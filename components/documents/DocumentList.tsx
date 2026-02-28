@@ -1,7 +1,7 @@
 'use client';
 // E6: uploaded document list + delete
 import { useState, useEffect, useCallback } from 'react';
-import { Trash2, FileText, RefreshCw } from 'lucide-react';
+import { Trash2, FileText, RefreshCw, ChevronDown } from 'lucide-react';
 import type { KimchiDocument } from '@/types';
 
 interface DocsApiResponse {
@@ -9,11 +9,14 @@ interface DocsApiResponse {
   error?: { code: string; message: string };
 }
 
+const PAGE_SIZE = 20;
+
 export default function DocumentList() {
   const [documents, setDocuments] = useState<KimchiDocument[]>([]);
   const [vectorStoreSize, setVectorStoreSize] = useState(0);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
@@ -23,6 +26,8 @@ export default function DocumentList() {
       if (json.data) {
         setDocuments(json.data.documents);
         setVectorStoreSize(json.data.vectorStoreSize);
+        // Reset pagination when refreshing
+        setVisibleCount(PAGE_SIZE);
       }
     } finally {
       setLoading(false);
@@ -47,6 +52,10 @@ export default function DocumentList() {
     }
   };
 
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + PAGE_SIZE);
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -59,6 +68,9 @@ export default function DocumentList() {
     });
   };
 
+  const visibleDocuments = documents.slice(0, visibleCount);
+  const hasMore = visibleCount < documents.length;
+
   return (
     <div className="mt-6">
       {/* Header */}
@@ -68,7 +80,7 @@ export default function DocumentList() {
             <span>📋</span> 업로드된 문서
           </h3>
           <p className="text-xs text-brand-text-muted mt-0.5">
-            총 {documents.length}개 · 청크 {vectorStoreSize}개
+            총 {documents.length}개 · 표시 {visibleDocuments.length}개 · 청크 {vectorStoreSize}개
           </p>
         </div>
         <button
@@ -92,31 +104,45 @@ export default function DocumentList() {
           <p className="text-xs text-brand-text-muted mt-1">문서를 업로드하면 AI가 참고합니다</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {documents.map((doc) => (
-            <div
-              key={doc.id}
-              className="flex items-center gap-3 p-3 rounded-xl bg-white border border-kimchi-beige-dark hover:border-kimchi-orange/40 transition-colors"
-            >
-              <FileText size={16} className="text-kimchi-orange shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-brand-text-primary truncate">{doc.name}</p>
-                <p className="text-xs text-brand-text-muted">
-                  {(doc.fileType ?? doc.type ?? '').toUpperCase()} · {formatFileSize(doc.fileSize ?? 0)} · 청크 {doc.chunks}개 · {formatDate(doc.createdAt)}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleDelete(doc)}
-                disabled={deletingId === doc.id}
-                className="p-1.5 rounded-lg text-brand-text-muted hover:text-kimchi-red hover:bg-kimchi-red/5 transition-colors disabled:opacity-40 shrink-0"
-                title="삭제"
+        <>
+          <div className="space-y-2">
+            {visibleDocuments.map((doc) => (
+              <div
+                key={doc.id}
+                className="flex items-center gap-3 p-3 rounded-xl bg-white border border-kimchi-beige-dark hover:border-kimchi-orange/40 transition-colors"
               >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          ))}
-        </div>
+                <FileText size={16} className="text-kimchi-orange shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-brand-text-primary truncate">{doc.name}</p>
+                  <p className="text-xs text-brand-text-muted">
+                    {(doc.fileType ?? doc.type ?? '').toUpperCase()} · {formatFileSize(doc.fileSize ?? 0)} · 청크 {doc.chunks}개 · {formatDate(doc.createdAt)}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(doc)}
+                  disabled={deletingId === doc.id}
+                  className="p-1.5 rounded-lg text-brand-text-muted hover:text-kimchi-red hover:bg-kimchi-red/5 transition-colors disabled:opacity-40 shrink-0"
+                  title="삭제"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Load more */}
+          {hasMore && (
+            <button
+              type="button"
+              onClick={handleLoadMore}
+              className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 text-xs text-brand-text-secondary hover:text-brand-text-primary hover:bg-kimchi-beige rounded-xl border border-kimchi-beige-dark transition-colors"
+            >
+              <ChevronDown size={14} />
+              더 보기 ({documents.length - visibleCount}개 남음)
+            </button>
+          )}
+        </>
       )}
     </div>
   );

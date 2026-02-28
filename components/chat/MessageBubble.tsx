@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ChevronDown, ChevronUp, FileText } from 'lucide-react';
@@ -12,10 +12,20 @@ interface MessageBubbleProps {
   isStreaming?: boolean;
 }
 
-export default function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
+const COLLAPSE_THRESHOLD = 500;
+
+function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
   const [sourcesOpen, setSourcesOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const isUser = message.role === 'user';
   const hasSources = message.sources && message.sources.length > 0;
+
+  const content = message.content || '';
+  const isLong = content.length > COLLAPSE_THRESHOLD;
+  const displayContent =
+    isLong && !expanded && !isStreaming
+      ? content.slice(0, COLLAPSE_THRESHOLD) + '...'
+      : content;
 
   return (
     <div
@@ -42,13 +52,39 @@ export default function MessageBubble({ message, isStreaming }: MessageBubblePro
           )}
         >
           {isUser ? (
-            <p className="whitespace-pre-wrap break-words">{message.content}</p>
+            <p className="whitespace-pre-wrap break-words">{displayContent}</p>
           ) : (
             <div className={clsx('markdown-content', isStreaming && 'streaming-cursor')}>
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {message.content || ''}
+                {displayContent}
               </ReactMarkdown>
             </div>
+          )}
+
+          {/* Expand / Collapse toggle for long messages */}
+          {isLong && !isStreaming && (
+            <button
+              type="button"
+              onClick={() => setExpanded((prev) => !prev)}
+              className={clsx(
+                'mt-2 flex items-center gap-1 text-xs font-medium transition-colors',
+                isUser
+                  ? 'text-white/80 hover:text-white'
+                  : 'text-brand-text-muted hover:text-brand-text-secondary'
+              )}
+            >
+              {expanded ? (
+                <>
+                  <ChevronUp size={12} />
+                  접기
+                </>
+              ) : (
+                <>
+                  <ChevronDown size={12} />
+                  더 보기
+                </>
+              )}
+            </button>
           )}
         </div>
 
@@ -92,3 +128,5 @@ export default function MessageBubble({ message, isStreaming }: MessageBubblePro
     </div>
   );
 }
+
+export default React.memo(MessageBubble);

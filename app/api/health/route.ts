@@ -26,20 +26,41 @@ async function checkMlServer(): Promise<boolean> {
   }
 }
 
+async function checkChat(): Promise<'ok' | 'degraded' | 'unavailable'> {
+  const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
+  const hasOpenAI = !!process.env.OPENAI_API_KEY || !!process.env.OPENAI_CHAT_MODEL;
+  const hasOllama = !!process.env.OLLAMA_BASE_URL;
+  if (!hasAnthropic && !hasOpenAI && !hasOllama) return 'unavailable';
+  if (!hasAnthropic && (hasOpenAI || hasOllama)) return 'degraded';
+  return 'ok';
+}
+
 export async function GET(): Promise<Response> {
-  const [ollamaOk, mlOk] = await Promise.all([checkOllama(), checkMlServer()]);
+  const [ollamaOk, mlOk, chatStatus] = await Promise.all([
+    checkOllama(),
+    checkMlServer(),
+    checkChat(),
+  ]);
 
   const embeddingProvider = process.env.EMBEDDING_PROVIDER ?? 'auto';
   const vectorStore = process.env.DATABASE_URL ? 'pgvector' : 'memory';
+
+  const mem = process.memoryUsage();
 
   return ok({
     status: 'ok',
     timestamp: new Date().toISOString(),
     services: {
+      chat: chatStatus,
       vectorStore,
       embeddingProvider,
       ollama: ollamaOk ? 'ok' : 'unavailable',
       mlServer: mlOk ? 'ok' : 'unavailable',
+    },
+    memory: {
+      heapUsedMB: Math.round(mem.heapUsed / 1024 / 1024),
+      heapTotalMB: Math.round(mem.heapTotal / 1024 / 1024),
+      rssMB: Math.round(mem.rss / 1024 / 1024),
     },
   });
 }

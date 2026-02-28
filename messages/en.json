@@ -1,0 +1,103 @@
+{
+  "common": {
+    "newChat": "New Chat",
+    "send": "Send",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "save": "Save",
+    "close": "Close",
+    "retry": "Retry"
+  },
+  "header": {
+    "title": "Kimchi Factory AI Assistant",
+    "dashboard": "Dashboard",
+    "chat": "Chat",
+    "documents": "Documents"
+  },
+  "sidebar": {
+    "conversations": "Conversations",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "older": "Older",
+    "searchPlaceholder": "Search conversations...",
+    "noConversations": "No conversations",
+    "documentManagement": "Document Manager",
+    "settings": "Settings"
+  },
+  "chat": {
+    "placeholder": "Ask anything about kimchi manufacturing...",
+    "voiceLabel": "Voice input",
+    "ragSearching": "Searching related documents...",
+    "llmGenerating": "Generating response...",
+    "emptyState": "Kimchi Factory AI Assistant. How can I help you?",
+    "errorMessage": "An error occurred while generating the response. Please try again.",
+    "sources": "Sources",
+    "showMore": "Show more",
+    "showLess": "Show less"
+  },
+  "documents": {
+    "title": "Document Manager",
+    "upload": "Drag or click to upload files",
+    "supportedFormats": "Supported: TXT, CSV, XLSX, PDF",
+    "maxSize": "Max 10MB",
+    "uploading": "Uploading...",
+    "processing": "Processing...",
+    "processed": "Processed",
+    "error": "Processing failed",
+    "chunks": "chunks",
+    "deleteConfirm": "Are you sure you want to delete this document?",
+    "noDocuments": "No documents uploaded"
+  },
+  "ml": {
+    "confidence": "Prediction Confidence",
+    "lowConfidence": "Low confidence. Use results as reference only.",
+    "highConfidence": "High confidence",
+    "mediumConfidence": "Medium confidence",
+    "fermentationStage": "Fermentation Stage",
+    "fermentationProgress": "Fermentation Progress",
+    "estimatedCompletion": "Estimated Completion",
+    "anomalyDetected": "Anomaly Detected",
+    "noAnomaly": "Normal",
+    "qualityGrade": "Quality Grade",
+    "recommendations": "Recommendations",
+    "stages": {
+      "early": "Early",
+      "mid": "Mid",
+      "late": "Late",
+      "complete": "Complete"
+    }
+  },
+  "quickQuestions": {
+    "temperature": "Current fermentation room temp & humidity?",
+    "salinity": "Today's batch salinity results?",
+    "progress": "Current fermentation progress & ETA?",
+    "alert": "Any anomaly alerts right now?",
+    "haccp": "Show today's HACCP checklist",
+    "production": "This week's production status?"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "sensorData": "Sensor Data",
+    "mlPrediction": "ML Prediction",
+    "alerts": "Alerts",
+    "noData": "No data available"
+  },
+  "alerts": {
+    "critical": "Critical",
+    "warning": "Warning",
+    "info": "Info",
+    "noAlerts": "No active alerts",
+    "acknowledge": "Acknowledge"
+  },
+  "accessibility": {
+    "skipToContent": "Skip to content",
+    "menuOpen": "Open menu",
+    "menuClose": "Close menu",
+    "languageSwitch": "Change language",
+    "questionListOpen": "Open question list",
+    "questionListClose": "Close question list"
+  }
+}

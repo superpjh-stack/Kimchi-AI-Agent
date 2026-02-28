@@ -6,7 +6,7 @@ export async function register() {
     const { init, getDefaultIntegrations } = await import('@sentry/nextjs');
     init({
       dsn: process.env.SENTRY_DSN,
-      tracesSampleRate: 0.1,
+      tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE ?? '0.1'),
       enabled: process.env.NODE_ENV === 'production',
       integrations: getDefaultIntegrations({}),
       // PII 필터 — 요청 헤더/IP 제거
@@ -28,7 +28,7 @@ export async function register() {
     const { init } = await import('@sentry/nextjs');
     init({
       dsn: process.env.SENTRY_DSN,
-      tracesSampleRate: 0.1,
+      tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE ?? '0.1'),
       enabled: process.env.NODE_ENV === 'production',
     });
   }

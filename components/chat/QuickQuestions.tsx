@@ -1,33 +1,47 @@
 'use client';
 
 import clsx from 'clsx';
+import {
+  Thermometer,
+  Droplets,
+  Clock,
+  AlertTriangle,
+  ClipboardCheck,
+  BarChart2,
+  type LucideIcon,
+} from 'lucide-react';
 
 interface QuickQuestionsProps {
   onSelect: (question: string) => void;
 }
 
-const QUICK_QUESTIONS = [
-  { icon: '🌡️', text: '지금 공정 상태 전체적으로 어때?', category: '공정' },
-  { icon: '⚠️', text: '현재 이상 경보 있어? 조치 방법 알려줘', category: '안전' },
-  { icon: '⏱️', text: '발효 완료까지 얼마나 남았어?', category: '생산' },
-  { icon: '🧂', text: '염도가 범위를 벗어나면 어떻게 해야 해?', category: '품질' },
-  { icon: '📋', text: 'HACCP 체크리스트 오늘 항목 알려줘', category: '위생' },
-  { icon: '🔬', text: '현재 pH 수치로 발효 단계 평가해줘', category: '공정' },
+interface QuickQuestion {
+  Icon: LucideIcon;
+  text: string;
+  category: string;
+}
+
+const QUICK_QUESTIONS: QuickQuestion[] = [
+  { Icon: Thermometer, text: '현재 발효실 온도와 습도는?', category: '환경' },
+  { Icon: Droplets, text: '오늘 배치 염도 측정 결과는?', category: '품질' },
+  { Icon: Clock, text: '현재 발효 진행률과 예상 완료 시간은?', category: '생산' },
+  { Icon: AlertTriangle, text: '현재 이상 감지 알림이 있나요?', category: '안전' },
+  { Icon: ClipboardCheck, text: '오늘 HACCP 체크리스트 항목 알려줘', category: '품질' },
+  { Icon: BarChart2, text: '이번 주 생산량 현황은?', category: '생산' },
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  '공정': 'bg-kimchi-orange/10 text-kimchi-orange border-kimchi-orange/20',
+  '환경': 'bg-blue-50 text-blue-600 border-blue-100',
   '품질': 'bg-kimchi-green/10 text-kimchi-green border-kimchi-green/20',
   '생산': 'bg-purple-50 text-purple-600 border-purple-100',
   '안전': 'bg-kimchi-red/10 text-kimchi-red border-kimchi-red/20',
-  '위생': 'bg-blue-50 text-blue-600 border-blue-100',
 };
 
 export default function QuickQuestions({ onSelect }: QuickQuestionsProps) {
   return (
     <div className="w-full max-w-2xl mx-auto px-4">
       <p className="text-sm text-brand-text-secondary text-center mb-3 font-medium">
-        자주 묻는 질문 🍚
+        자주 묻는 질문
       </p>
 
       {/* Mobile: horizontal scroll / Tablet+: grid */}
@@ -45,7 +59,7 @@ export default function QuickQuestions({ onSelect }: QuickQuestionsProps) {
               'shrink-0 min-w-[200px] md:min-w-0 md:shrink'
             )}
           >
-            <span className="text-xl shrink-0 mt-0.5">{q.icon}</span>
+            <q.Icon size={20} className="shrink-0 mt-0.5 text-brand-text-muted group-hover:text-kimchi-red transition-colors" />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-brand-text-primary group-hover:text-kimchi-red leading-snug">
                 {q.text}

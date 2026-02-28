@@ -1,6 +1,7 @@
 'use client';
 
-import { Menu, HelpCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Menu, HelpCircle, Wifi, WifiOff } from 'lucide-react';
 import clsx from 'clsx';
 import type { TabId } from '@/components/layout/BottomNav';
 
@@ -19,6 +20,27 @@ const DESKTOP_TABS: { id: TabId; label: string }[] = [
   { id: 'documents', label: '문서' },
 ];
 
+function useOnlineStatus() {
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  );
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  return isOnline;
+}
+
 export default function Header({
   title = '새 대화',
   onMenuToggle,
@@ -27,6 +49,8 @@ export default function Header({
   activeTab,
   onTabChange,
 }: HeaderProps) {
+  const isOnline = useOnlineStatus();
+
   return (
     <header
       className="flex items-center gap-3 px-4 border-b border-kimchi-beige-dark bg-white"
@@ -65,10 +89,40 @@ export default function Header({
         </div>
       </div>
 
+      {/* Connection status indicator */}
+      <div
+        className={clsx(
+          'hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-colors',
+          isOnline
+            ? 'bg-green-50 text-green-700 border border-green-200'
+            : 'bg-red-50 text-red-700 border border-red-200'
+        )}
+        aria-live="polite"
+        aria-label={isOnline ? '인터넷 연결됨' : '인터넷 연결 안 됨'}
+      >
+        <span
+          className={clsx(
+            'w-1.5 h-1.5 rounded-full shrink-0',
+            isOnline ? 'bg-green-500' : 'bg-red-500'
+          )}
+        />
+        {isOnline ? (
+          <>
+            <Wifi size={11} />
+            <span>온라인</span>
+          </>
+        ) : (
+          <>
+            <WifiOff size={11} />
+            <span>오프라인</span>
+          </>
+        )}
+      </div>
+
       {/* Logo badge */}
       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-kimchi-red/10 rounded-full border border-kimchi-red/20">
         <span className="text-base">🌶️</span>
-        <span className="text-xs font-bold text-kimchi-red">김치공장 AI 도우미</span>
+        <span className="text-xs font-bold text-kimchi-red hidden sm:inline">김치공장 AI 도우미</span>
       </div>
 
       {/* Question panel toggle — desktop */}

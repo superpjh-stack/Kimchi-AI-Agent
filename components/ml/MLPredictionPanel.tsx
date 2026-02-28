@@ -3,7 +3,10 @@
 import { useMlPrediction } from '@/hooks/useMlPrediction';
 import FermentationProgressBar from './FermentationProgressBar';
 import QualityGradeBadge from './QualityGradeBadge';
+import ConfidenceBar from './ConfidenceBar';
 import type { SensorData } from '@/lib/process/sensor-client';
+
+const ML_CONFIDENCE_THRESHOLD = parseFloat(process.env.NEXT_PUBLIC_ML_CONFIDENCE_THRESHOLD ?? '0.6');
 
 interface Props {
   sensors: SensorData | null;
@@ -51,6 +54,13 @@ export default function MLPredictionPanel({ sensors, refreshInterval = 30_000 }:
             stage={fermentation.stage}
             confidence={fermentation.confidence}
           />
+          <div className="mt-2">
+            <ConfidenceBar
+              value={fermentation.confidence}
+              threshold={ML_CONFIDENCE_THRESHOLD}
+              label="예측 신뢰도"
+            />
+          </div>
           <p className="text-xs text-gray-500 mt-1.5">
             예상 완료:{' '}
             <span className="font-medium text-gray-700">

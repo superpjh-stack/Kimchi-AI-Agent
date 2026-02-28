@@ -1,39 +1,34 @@
 // lib/ml/rule-based-predictor.ts — Q10 법칙 기반 발효 예측 + 품질 등급
 import type { SensorData } from '@/lib/process/sensor-client';
 import type { IPredictor, FermentationPrediction, QualityPrediction, QualityInput } from './predictor';
-
-// 발효 기준값 (20°C에서 72시간)
-const BASE_TEMP = 20;
-const BASE_HOURS = 72;
-
-// 이상 감지 임계값
-const ANOMALY = {
-  tempMin: 10, tempMax: 28,
-  salinityMin: 1.0, salinityMax: 3.5,
-  phMin: 3.5, phMax: 6.0,
-};
-
-// 품질 등급 범위
-const GRADE_A = { tempMin: 18, tempMax: 22, salMin: 2.0, salMax: 2.5, phMin: 4.0, phMax: 4.5 };
-const GRADE_B = { tempMin: 16, tempMax: 24, salMin: 1.8, salMax: 2.75, phMin: 3.8, phMax: 4.8 };
+import { loadMLConfig, type MLConfig } from '@/config/ml.config';
 
 function clamp(v: number, min: number, max: number): number {
   return Math.min(Math.max(v, min), max);
 }
 
 export class RuleBasedPredictor implements IPredictor {
+  private readonly config: MLConfig;
+
+  constructor(config?: MLConfig) {
+    this.config = config ?? loadMLConfig();
+  }
+
   async predictFermentation(sensors: SensorData): Promise<FermentationPrediction> {
     const { temperature, fermentationHours } = sensors;
+    const { baseTemp, baseHours, q10Factor } = this.config.fermentation;
+    const { anomalyPenalty, baseMin, maxBoost } = this.config.confidence;
+    const ANOMALY = this.config.anomaly;
 
-    // Q10 온도 보정: 온도가 10°C 오를수록 반응속도 2배
-    const tempFactor = Math.pow(2, (temperature - BASE_TEMP) / 10);
+    // Q10 온도 보정: 온도가 10°C 오를수록 반응속도 q10Factor배
+    const tempFactor = Math.pow(q10Factor, (temperature - baseTemp) / 10);
     const effectiveHours = fermentationHours * tempFactor;
-    const fermentationPct = clamp(effectiveHours / BASE_HOURS, 0, 1);
+    const fermentationPct = clamp(effectiveHours / baseHours, 0, 1);
 
     // ETA 계산
     const remainingHours = fermentationPct >= 1
       ? 0
-      : (BASE_HOURS - effectiveHours) / tempFactor;
+      : (baseHours - effectiveHours) / tempFactor;
     const eta = new Date(Date.now() + remainingHours * 3600 * 1000).toISOString();
 
     // 발효 단계
@@ -53,7 +48,9 @@ export class RuleBasedPredictor implements IPredictor {
       anomalyReasons.push(`pH 이상 (${sensors.ph.toFixed(2)})`);
 
     const anomaly = anomalyReasons.length > 0;
-    const confidence = anomaly ? 0.5 : clamp(0.7 + fermentationPct * 0.25, 0.7, 0.95);
+    const confidence = anomaly
+      ? anomalyPenalty
+      : clamp(baseMin + fermentationPct * maxBoost, baseMin, baseMin + maxBoost);
 
     return {
       fermentationPct,
@@ -67,6 +64,8 @@ export class RuleBasedPredictor implements IPredictor {
 
   async predictQuality(input: QualityInput): Promise<QualityPrediction> {
     const { temperature, salinity, ph } = input;
+    const GRADE_A = this.config.quality.gradeA;
+    const GRADE_B = this.config.quality.gradeB;
 
     const inA =
       temperature >= GRADE_A.tempMin && temperature <= GRADE_A.tempMax &&
