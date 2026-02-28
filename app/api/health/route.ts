@@ -1,5 +1,6 @@
 // GET /api/health — 서비스 헬스체크
 import { ok } from '@/lib/utils/api-response';
+import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,7 +36,7 @@ async function checkChat(): Promise<'ok' | 'degraded' | 'unavailable'> {
   return 'ok';
 }
 
-export async function GET(): Promise<Response> {
+async function healthHandler(_req: AuthRequest): Promise<Response> {
   const [ollamaOk, mlOk, chatStatus] = await Promise.all([
     checkOllama(),
     checkMlServer(),
@@ -64,3 +65,8 @@ export async function GET(): Promise<Response> {
     },
   });
 }
+
+export const GET = withAuth(healthHandler, { permissions: ['health:read'] });
+
+// 로드밸런서용 공개 헬스체크 엔드포인트 — /api/health/ping 별도 (추후 추가)
+

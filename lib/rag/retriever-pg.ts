@@ -1,7 +1,10 @@
 // lib/rag/retriever-pg.ts — pgvector 백엔드 VectorStore 구현
 import { Pool } from 'pg';
+import { createLogger } from '@/lib/logger';
 import type { Chunk } from './chunker';
 import type { StoredEntry, SearchResult, VectorStore, DocumentStats } from './retriever';
+
+const log = createLogger('rag.pg');
 
 export class PgVectorStore implements VectorStore {
   readonly storageType = 'pgvector' as const;
@@ -37,11 +40,9 @@ export class PgVectorStore implements VectorStore {
         if (storedDim !== -1 && storedDim !== this.dimension) {
           const countResult = await client.query('SELECT COUNT(*) FROM document_chunks');
           const lostChunks = parseInt(countResult.rows[0].count, 10);
-          console.warn(
-            `[pgvector] 차원 불일치 감지: DB=${storedDim} vs embedder=${this.dimension} — 테이블 재생성`
-          );
+          log.warn({ storedDim, embedderDim: this.dimension }, '[pgvector] 차원 불일치 감지 — 테이블 재생성');
           if (lostChunks > 0) {
-            console.warn(`[pgvector] ${lostChunks}개 청크 삭제됨 — 문서 재업로드 필요`);
+            log.warn({ lostChunks }, '[pgvector] 청크 삭제됨 — 문서 재업로드 필요');
           }
           await client.query('DROP TABLE document_chunks');
         }
@@ -74,11 +75,11 @@ export class PgVectorStore implements VectorStore {
             WITH (lists = 100)
           `);
         } catch {
-          console.warn('[pgvector] IVFFlat 인덱스 생성 스킵 (데이터 부족)');
+          log.warn('[pgvector] IVFFlat 인덱스 생성 스킵 (데이터 부족)');
         }
       }
 
-      console.log(`[pgvector] 초기화 완료 (dimension=${this.dimension}, chunks=${count})`);
+      log.info({ dimension: this.dimension, chunks: count }, '[pgvector] 초기화 완료');
     } finally {
       client.release();
     }

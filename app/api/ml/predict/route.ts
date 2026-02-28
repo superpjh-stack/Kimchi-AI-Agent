@@ -6,6 +6,7 @@ import { PredictionCache, makeFermentationKey } from '@/lib/ml/prediction-cache'
 import { predictionHistory } from '@/lib/ml/prediction-history';
 import { createLogger } from '@/lib/logger';
 import { mlLimiter } from '@/lib/middleware/rate-limit';
+import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
 import type { SensorData } from '@/lib/process/sensor-client';
 import type { FermentationPrediction } from '@/lib/ml/predictor';
 
@@ -15,7 +16,7 @@ export const runtime = 'nodejs';
 
 const cache = new PredictionCache<FermentationPrediction>(30_000);
 
-export async function POST(req: Request): Promise<Response> {
+async function predictHandler(req: AuthRequest): Promise<Response> {
   // S4-4: Rate limiting
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
   const { allowed, remaining: rlRemaining, resetAt } = mlLimiter.check(ip);
@@ -79,3 +80,5 @@ export async function POST(req: Request): Promise<Response> {
     return err('PREDICTION_FAILED', '예측 실패', 500);
   }
 }
+
+export const POST = withAuth(predictHandler, { permissions: ['ml:read'] });

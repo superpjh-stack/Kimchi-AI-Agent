@@ -3,10 +3,11 @@
 import { ok } from '@/lib/utils/api-response';
 import { isBkendConfigured, documentsDb } from '@/lib/db/bkend';
 import { getStoreSize } from '@/lib/rag/retriever';
+import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
 
 export const runtime = 'nodejs';
 
-export async function GET(req: Request): Promise<Response> {
+async function listDocuments(req: AuthRequest): Promise<Response> {
   const url = new URL(req.url);
   const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '50', 10), 100);
   const page = Math.max(parseInt(url.searchParams.get('page') ?? '1', 10), 1);
@@ -26,3 +27,5 @@ export async function GET(req: Request): Promise<Response> {
     { total: 0, limit, page }
   );
 }
+
+export const GET = withAuth(listDocuments, { permissions: ['upload:write'] });

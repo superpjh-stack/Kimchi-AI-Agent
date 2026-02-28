@@ -3,10 +3,11 @@
 import { ok, err } from '@/lib/utils/api-response';
 import { embed } from '@/lib/rag/embedder';
 import { search } from '@/lib/rag/retriever';
+import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
 
 export const runtime = 'nodejs';
 
-export async function GET(req: Request): Promise<Response> {
+async function ragDebugHandler(req: AuthRequest): Promise<Response> {
   const url = new URL(req.url);
   const query = url.searchParams.get('q')?.trim();
 
@@ -38,3 +39,5 @@ export async function GET(req: Request): Promise<Response> {
     results: topKResults,
   });
 }
+
+export const GET = withAuth(ragDebugHandler, { permissions: ['rag:debug'] });

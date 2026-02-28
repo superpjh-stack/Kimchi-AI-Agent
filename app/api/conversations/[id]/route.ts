@@ -2,14 +2,17 @@
 import { conversationStore, deleteConversationEntry } from '@/lib/db/conversations-store';
 import { isBkendConfigured, conversationsDb, messagesDb } from '@/lib/db/bkend';
 import { ok, err } from '@/lib/utils/api-response';
+import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
+import { logAudit } from '@/lib/auth/audit-logger';
 import type { Message } from '@/types';
 
 export const runtime = 'nodejs';
 
-export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
+async function getConversation(
+  req: AuthRequest,
+  ...args: unknown[]
 ): Promise<Response> {
+  const { params } = args[0] as { params: { id: string } };
   if (isBkendConfigured()) {
     try {
       const [conversation, msgResult] = await Promise.all([
@@ -39,13 +42,22 @@ export async function GET(
   return ok({ conversation: entry.conversation, messages: entry.messages });
 }
 
-export async function DELETE(
-  _req: Request,
-  { params }: { params: { id: string } }
+async function deleteConversation(
+  req: AuthRequest,
+  ...args: unknown[]
 ): Promise<Response> {
+  const { params } = args[0] as { params: { id: string } };
   if (isBkendConfigured()) {
     try {
       await conversationsDb.delete(params.id);
+      logAudit({
+        action: 'conversation.delete',
+        actorEmail: req.user.sub,
+        actorRole: req.user.role,
+        resourceType: 'conversation',
+        resourceId: params.id,
+        ip: req.headers.get('x-forwarded-for') ?? undefined,
+      });
       return ok({ deleted: true });
     } catch (e) {
       if (e instanceof Error && e.message.includes('404')) {
@@ -58,5 +70,15 @@ export async function DELETE(
   // 파일 저장소 폴백
   const existed = deleteConversationEntry(params.id);
   if (!existed) return err('NOT_FOUND', 'Conversation not found', 404);
+  logAudit({
+    action: 'conversation.delete',
+    actorEmail: req.user.sub,
+    actorRole: req.user.role,
+    resourceType: 'conversation',
+    resourceId: params.id,
+  });
   return ok({ deleted: true });
 }
+
+export const GET    = withAuth(getConversation,    { permissions: ['conversations:read'] });
+export const DELETE = withAuth(deleteConversation, { permissions: ['conversations:delete'] });

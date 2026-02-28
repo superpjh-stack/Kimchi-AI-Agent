@@ -1,13 +1,14 @@
 // D6: GET /api/alerts/stream — SSE 실시간 알림 스트림
 import { createSensorClient } from '@/lib/process/sensor-client';
 import { checkAlerts } from '@/lib/process/alert-rules';
+import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const POLL_INTERVAL = parseInt(process.env.SENSOR_POLL_INTERVAL ?? '30000', 10);
 
-export async function GET(): Promise<Response> {
+async function alertsStreamHandler(_req: AuthRequest): Promise<Response> {
   const client = createSensorClient();
   const encoder = new TextEncoder();
   let intervalId: ReturnType<typeof setInterval> | undefined;
@@ -56,3 +57,5 @@ export async function GET(): Promise<Response> {
     },
   });
 }
+
+export const GET = withAuth(alertsStreamHandler, { permissions: ['alerts:read'] });

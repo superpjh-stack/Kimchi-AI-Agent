@@ -2,8 +2,9 @@
 
 import { ok, err } from '@/lib/utils/api-response';
 import { getDocumentStats } from '@/lib/rag/retriever';
+import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
 
-export async function GET(): Promise<Response> {
+async function statsHandler(_req: AuthRequest): Promise<Response> {
   try {
     const stats = getDocumentStats();
     return ok(stats);
@@ -12,3 +13,5 @@ export async function GET(): Promise<Response> {
     return err('STATS_ERROR', message, 500);
   }
 }
+
+export const GET = withAuth(statsHandler, { permissions: ['upload:write'] });

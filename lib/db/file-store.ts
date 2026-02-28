@@ -1,7 +1,10 @@
 // 파일 기반 영구 저장소 — .local-db/conversations.json
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
+import { createLogger } from '@/lib/logger';
 import type { Conversation, Message } from '@/types';
+
+const log = createLogger('db.file-store');
 
 export type ConversationEntry = { conversation: Conversation; messages: Message[] };
 
@@ -22,7 +25,7 @@ export function loadConversations(): Map<string, ConversationEntry> {
     }
   } catch {
     // 파싱 오류 시 빈 스토어로 시작
-    console.warn('[file-store] conversations.json 로드 실패 — 빈 스토어로 초기화');
+    log.warn('conversations.json 로드 실패 — 빈 스토어로 초기화');
   }
   return new Map();
 }
@@ -32,6 +35,6 @@ export function saveConversations(store: Map<string, ConversationEntry>): void {
     const data = Object.fromEntries(store.entries());
     writeFileSync(CONV_FILE, JSON.stringify(data, null, 2), 'utf-8');
   } catch (e) {
-    console.error('[file-store] 저장 실패:', e);
+    log.error({ err: e }, '저장 실패');
   }
 }

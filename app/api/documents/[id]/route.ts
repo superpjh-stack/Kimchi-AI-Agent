@@ -2,13 +2,16 @@
 import { ok, err } from '@/lib/utils/api-response';
 import { isBkendConfigured, documentsDb } from '@/lib/db/bkend';
 import { removeDocumentFull } from '@/lib/rag/pipeline';
+import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
+import { logAudit } from '@/lib/auth/audit-logger';
 
 export const runtime = 'nodejs';
 
-export async function DELETE(
-  _req: Request,
-  { params }: { params: { id: string } }
+async function deleteDocument(
+  req: AuthRequest,
+  ...args: unknown[]
 ): Promise<Response> {
+  const { params } = args[0] as { params: { id: string } };
   const { id } = params;
 
   // 벡터 스토어 + BM25 인덱스에서 동시 제거
@@ -25,5 +28,16 @@ export async function DELETE(
     }
   }
 
+  logAudit({
+    action: 'document.delete',
+    actorEmail: req.user.sub,
+    actorRole: req.user.role,
+    resourceType: 'document',
+    resourceId: id,
+    ip: req.headers.get('x-forwarded-for') ?? undefined,
+  });
+
   return ok({ deleted: true, id });
 }
+
+export const DELETE = withAuth(deleteDocument, { permissions: ['upload:write'] });

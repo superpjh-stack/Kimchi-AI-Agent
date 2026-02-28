@@ -1,6 +1,9 @@
 // lib/ml/remote-predictor.ts — FastAPI 원격 서버 연동 + 규칙 기반 폴백
+import { createLogger } from '@/lib/logger';
 import type { SensorData } from '@/lib/process/sensor-client';
 import type { IPredictor, FermentationPrediction, QualityPrediction, QualityInput } from './predictor';
+
+const log = createLogger('ml.remote');
 
 const TIMEOUT_MS = 3000;
 
@@ -15,7 +18,7 @@ export class RemoteMLPredictor implements IPredictor {
       const res = await this.post('/predict', sensors);
       return res as FermentationPrediction;
     } catch (err) {
-      console.warn('[ml] remote predict 실패, 규칙 기반 폴백:', err instanceof Error ? err.message : err);
+      log.warn({ err: err instanceof Error ? err.message : err }, '[ml] remote predict 실패, 규칙 기반 폴백');
       return this.fallback.predictFermentation(sensors);
     }
   }
@@ -25,7 +28,7 @@ export class RemoteMLPredictor implements IPredictor {
       const res = await this.post('/quality', input);
       return res as QualityPrediction;
     } catch (err) {
-      console.warn('[ml] remote quality 실패, 규칙 기반 폴백:', err instanceof Error ? err.message : err);
+      log.warn({ err: err instanceof Error ? err.message : err }, '[ml] remote quality 실패, 규칙 기반 폴백');
       return this.fallback.predictQuality(input);
     }
   }

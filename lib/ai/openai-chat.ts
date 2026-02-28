@@ -1,5 +1,8 @@
 // OpenAI Chat Completions — SSE 스트리밍 (fetch 기반, 별도 패키지 불필요)
+import { createLogger } from '@/lib/logger';
 import type { DocumentSource, SSEEvent } from '@/types';
+
+const log = createLogger('ai.openai');
 
 const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
 export const OPENAI_CHAT_MODEL = process.env.OPENAI_CHAT_MODEL ?? 'gpt-4o-mini';
@@ -64,7 +67,7 @@ export function createOpenAISSEStream(
             if (payload === '[DONE]') {
               // 스트리밍 완료 — onComplete 콜백 호출 후 SSE done 전송
               if (onComplete) {
-                await onComplete(fullText).catch(console.error);
+                await onComplete(fullText).catch((e: unknown) => log.error({ err: e }, 'onComplete failed'));
               }
               if (sources && sources.length > 0) {
                 controller.enqueue(

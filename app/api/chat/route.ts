@@ -11,6 +11,8 @@ import { addMessageToConversation, setConversationEntry, createConversationEntry
 import { generateTitle, truncate } from '@/lib/utils/markdown';
 import { createLogger } from '@/lib/logger';
 import { chatLimiter } from '@/lib/middleware/rate-limit';
+import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
+import { sanitizeChatInput } from '@/lib/security/input-sanitizer';
 import type { ChatRequest, Message } from '@/types';
 
 const log = createLogger('api.chat');
@@ -22,7 +24,7 @@ export const runtime = 'nodejs';
 
 const MAX_MESSAGE_LENGTH = 10_000;
 
-export async function POST(req: Request): Promise<Response> {
+async function chatHandler(req: AuthRequest): Promise<Response> {
   // S4-4: Rate limiting
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
   const { allowed, remaining: rlRemaining, resetAt } = chatLimiter.check(ip);
@@ -48,7 +50,16 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  const { message, history = [] } = body;
+  const { history = [] } = body;
+  // S1-3: 입력 정제 (프롬프트 인젝션 방지)
+  const sanitized = sanitizeChatInput(body.message ?? '');
+  if (!sanitized.safe) {
+    return new Response(
+      JSON.stringify({ error: 'Invalid input detected' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+  const message = sanitized.sanitized;
   // A3: conversationId가 없으면 새 UUID 생성 (SSE done 이벤트에서 항상 유효한 ID 반환)
   const conversationId = body.conversationId ?? crypto.randomUUID();
 
@@ -158,3 +169,5 @@ export async function POST(req: Request): Promise<Response> {
     });
   }
 }
+
+export const POST = withAuth(chatHandler, { permissions: ['chat:write'] });

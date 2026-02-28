@@ -1,6 +1,8 @@
 // app/api/ml/thresholds/route.ts — 이상 감지 임계값 런타임 재정의
 
 import { loadMLConfig } from '@/config/ml.config';
+import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
+import { logAudit } from '@/lib/auth/audit-logger';
 
 type AnomalyKey = 'tempMin' | 'tempMax' | 'salinityMin' | 'salinityMax' | 'phMin' | 'phMax';
 
@@ -10,7 +12,7 @@ const ALLOWED_KEYS: AnomalyKey[] = [
   'tempMin', 'tempMax', 'salinityMin', 'salinityMax', 'phMin', 'phMax',
 ];
 
-export async function PATCH(req: Request): Promise<Response> {
+async function patchThresholds(req: AuthRequest): Promise<Response> {
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -28,10 +30,20 @@ export async function PATCH(req: Request): Promise<Response> {
   }
 
   runtimeOverrides = { ...runtimeOverrides, ...(body as Partial<Record<AnomalyKey, number>>) };
+
+  logAudit({
+    action: 'ml.thresholds.update',
+    actorEmail: req.user.sub,
+    actorRole: req.user.role,
+    resourceType: 'ml-config',
+    metadata: { overrides: body },
+    ip: req.headers.get('x-forwarded-for') ?? undefined,
+  });
+
   return Response.json({ anomaly: { ...loadMLConfig().anomaly, ...runtimeOverrides } });
 }
 
-export async function GET(): Promise<Response> {
+async function getThresholds(_req: AuthRequest): Promise<Response> {
   const config = loadMLConfig();
   return Response.json({
     anomaly: { ...config.anomaly, ...runtimeOverrides },
@@ -39,3 +51,6 @@ export async function GET(): Promise<Response> {
     overrides: runtimeOverrides,
   });
 }
+
+export const PATCH = withAuth(patchThresholds, { permissions: ['ml:admin'] });
+export const GET   = withAuth(getThresholds,   { permissions: ['ml:read'] });

@@ -3,9 +3,10 @@
 import { NextRequest } from 'next/server';
 import { ok, err } from '@/lib/utils/api-response';
 import { acknowledgeAlert, getAlert } from '@/lib/process/alert-store';
+import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
 
-export async function PATCH(
-  request: NextRequest,
+async function patchAlert(
+  request: AuthRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<Response> {
   const { id } = await params;
@@ -35,4 +36,15 @@ export async function PATCH(
   } catch {
     return err('INVALID_JSON', '잘못된 JSON 형식입니다.', 400);
   }
+}
+
+// NextRequest 호환: withAuth는 Request 기반이므로 래핑
+export async function PATCH(
+  req: NextRequest,
+  ctx: { params: Promise<{ id: string }> }
+): Promise<Response> {
+  return withAuth(
+    (authReq) => patchAlert(authReq as AuthRequest, ctx),
+    { permissions: ['alerts:read'] }
+  )(req);
 }

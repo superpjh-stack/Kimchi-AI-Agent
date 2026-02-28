@@ -3,6 +3,7 @@ import { ok, err } from '@/lib/utils/api-response';
 import { getPredictor } from '@/lib/ml/predictor-factory';
 import { PredictionCache, makeQualityKey } from '@/lib/ml/prediction-cache';
 import { createLogger } from '@/lib/logger';
+import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
 import type { QualityInput, QualityPrediction } from '@/lib/ml/predictor';
 
 const log = createLogger('api.ml.quality');
@@ -11,7 +12,7 @@ export const runtime = 'nodejs';
 
 const cache = new PredictionCache<QualityPrediction>(30_000);
 
-export async function POST(req: Request): Promise<Response> {
+async function qualityHandler(req: AuthRequest): Promise<Response> {
   let body: QualityInput;
   try {
     body = await req.json();
@@ -39,3 +40,5 @@ export async function POST(req: Request): Promise<Response> {
     return err('PREDICTION_FAILED', '예측 실패', 500);
   }
 }
+
+export const POST = withAuth(qualityHandler, { permissions: ['ml:read'] });

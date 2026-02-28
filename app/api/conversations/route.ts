@@ -5,11 +5,12 @@ import { ok, created } from '@/lib/utils/api-response';
 import { isBkendConfigured, conversationsDb } from '@/lib/db/bkend';
 import { conversationStore, createConversationEntry, setConversationEntry } from '@/lib/db/conversations-store';
 import { generateTitle, truncate } from '@/lib/utils/markdown';
+import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
 
 export const runtime = 'nodejs';
 
 // GET /api/conversations?limit=20&page=1
-export async function GET(req: Request): Promise<Response> {
+async function listConversations(req: AuthRequest): Promise<Response> {
   const url = new URL(req.url);
   const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '20', 10), 100);
   const page = Math.max(parseInt(url.searchParams.get('page') ?? '1', 10), 1);
@@ -36,7 +37,7 @@ export async function GET(req: Request): Promise<Response> {
 }
 
 // POST /api/conversations — 새 대화 생성
-export async function POST(req: Request): Promise<Response> {
+async function createConversation(req: AuthRequest): Promise<Response> {
   let body: { firstMessage?: string } = {};
   try {
     body = (await req.json()) as { firstMessage?: string };
@@ -60,3 +61,6 @@ export async function POST(req: Request): Promise<Response> {
   setConversationEntry(conversation.id, { conversation, messages: [] });
   return created(conversation);
 }
+
+export const GET    = withAuth(listConversations,   { permissions: ['conversations:read'] });
+export const POST   = withAuth(createConversation,  { permissions: ['conversations:write'] });
