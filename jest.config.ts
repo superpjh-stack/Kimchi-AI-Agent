@@ -19,6 +19,10 @@ const config: Config = {
     'lib/ml/rule-based-predictor.ts',
     'lib/ml/predictor-factory.ts',
     'lib/ml/prediction-cache.ts',
+    'lib/auth/rbac.ts',
+    'lib/auth/jwt.ts',
+    'lib/security/input-sanitizer.ts',
+    'lib/security/file-validator.ts',
   ],
 
   testMatch: [
@@ -29,7 +33,7 @@ const config: Config = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
 
   transformIgnorePatterns: [
-    '/node_modules/(?!(some-esm-module)/)',
+    '/node_modules/(?!(jose|some-esm-module)/)',
   ],
 };
 
