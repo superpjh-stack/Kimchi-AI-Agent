@@ -110,7 +110,9 @@ data: {"type":"error","message":"..."}
 - **인메모리 스토어**: Vector Store와 대화 기록은 서버 재시작 시 초기화 (MVP 허용, Phase 2에서 bkend.ai로 전환)
 - **OPENAI_API_KEY 없을 때**: mock embedding 사용 — RAG 파이프라인은 동작하나 시맨틱 검색 품질 낮음
 - **ChatWindow props**: `messages`, `isStreaming`, `onSend`를 부모(page.tsx)에서 주입 — useChat 훅을 직접 import하지 않음
-- **문서 지원 형식**: TXT, CSV, XLSX (xlsx 패키지), PDF (pdf-parse 패키지)
+- **문서 지원 형식**: TXT, CSV, XLSX (exceljs — Phase 6 교체), PDF (pdf-parse 패키지)
+- **인증**: JWT (jose) + httpOnly cookie, withAuth() HOF로 모든 API 보호
+- **RBAC**: admin > operator > viewer 3-role (lib/auth/rbac.ts)
 
 ## PDCA Status
 
@@ -121,15 +123,29 @@ data: {"type":"error","message":"..."}
 - Phase 5: `docs/archive/2026-02/kimchi-agent-phase5/` (Match Rate: 98.2%)
 - 김치군 마스코트: `docs/archive/2026-02/kimchi-mascot/` (Match Rate: 97.0%)
 
-### 현재 진행 중
-- Phase 6 Plan: `docs/01-plan/features/kimchi-agent-phase6.plan.md` (v1.3, 2026-02-28)
-  - Sprint 1: 보안강화 (API 인증/RBAC, xlsx→exceljs, CSP nonce) — OWASP 2 Critical 해결
-  - Sprint 2: 테스트 (Jest 80%+, Playwright E2E) + Vercel 배포 + Questions 패널 통합
-  - Sprint 3: ML A/B 테스트 프레임워크
-  - Sprint 4: Multi-tenant 기반 구조
+### 현재 진행 중 — Phase 6
+- Plan: `docs/01-plan/features/kimchi-agent-phase6.plan.md` (v1.3)
+- Design: `docs/02-design/features/kimchi-agent-phase6.design.md` (v1.0)
 
-### 주의사항 (Phase 6)
-- **보안**: API 인증 전무 (17개 엔드포인트) — Sprint 1 최우선
-- **xlsx 취약점**: Critical Prototype Pollution → exceljs 교체
-- **Questions 패널**: `components/questions/QuestionPanel.tsx` 완성, page.tsx 통합 필요
-- **커밋 대기**: master에서 origin/master 2커밋 ahead (push 필요)
+#### Sprint 1 완료 (보안 강화) — commit ba1a158
+- jose JWT + RBAC 3-role (admin/operator/viewer)
+- lib/auth/: jwt.ts, rbac.ts, credentials.ts, audit-logger.ts, auth-middleware.ts
+- lib/security/: file-validator.ts (magic bytes), input-sanitizer.ts (프롬프트 인젝션)
+- /api/auth/: login, logout, me, refresh 4개 라우트
+- 17개 API 라우트 전체 withAuth 적용 + 감사 로그
+- middleware.ts: CSP nonce + 보안 헤더
+- .eslintrc.json: no-console rule
+- exceljs로 xlsx 교체 (CVE 해결)
+
+#### Sprint 2 진행 중 (테스트 + 배포)
+- 테스트: 61 → 132개 (auth 21개 + security 50개 추가) — commit 971b346
+- 추가 필요: Playwright E2E, Lighthouse CI, Vercel 재배포
+
+#### Sprint 3 대기: ML A/B 테스트 프레임워크
+#### Sprint 4 대기: Multi-tenant AsyncLocalStorage
+
+### 환경 변수 추가 필요 (Phase 6)
+- `JWT_SECRET`: 필수 (최소 32바이트)
+- `AUTH_USERS`: JSON 배열 (bcrypt hash + role)
+- `JWT_ACCESS_TTL`: 선택 (기본 3600)
+- `JWT_REFRESH_TTL`: 선택 (기본 604800)
