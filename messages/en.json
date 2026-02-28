@@ -121,5 +121,18 @@
     "speechOn": "Turn on speech",
     "speechOff": "Turn off speech",
     "settings": "Kimchi-kun settings"
+  },
+  "questions": {
+    "toggle": "Quick Questions",
+    "title": "Frequently Asked Questions",
+    "close": "Close",
+    "categories": {
+      "process": "Process Status",
+      "alerts": "Anomaly Response",
+      "fermentation": "Fermentation Knowledge",
+      "quality": "Quality/HACCP",
+      "documents": "Document Search",
+      "production": "Production Operations"
+    }
   }
 }

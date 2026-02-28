@@ -1,6 +1,6 @@
 // 대화 스토어 — 파일 기반 영구 저장 (.local-db/conversations.json)
 import { generateTitle, truncate } from '@/lib/utils/markdown';
-import { loadConversations, saveConversations } from '@/lib/db/file-store';
+import { loadConversations, saveConversationsDebounced } from '@/lib/db/file-store';
 import type { Conversation, Message } from '@/types';
 
 // S4-8: 최대 대화 수 제한 — 메모리 누수 방지
@@ -10,7 +10,7 @@ const MAX_CONVERSATIONS = 500;
 export const conversationStore = loadConversations();
 
 function save() {
-  saveConversations(conversationStore);
+  saveConversationsDebounced(conversationStore);
 }
 
 export function createConversationEntry(firstUserMessage: string): Conversation {

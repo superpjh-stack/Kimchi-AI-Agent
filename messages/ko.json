@@ -121,5 +121,18 @@
     "speechOn": "대사 켜기",
     "speechOff": "대사 끄기",
     "settings": "김치군 설정"
+  },
+  "questions": {
+    "toggle": "빠른 질문",
+    "title": "자주 묻는 질문",
+    "close": "닫기",
+    "categories": {
+      "process": "공정 상태",
+      "alerts": "이상 대응",
+      "fermentation": "발효 지식",
+      "quality": "품질/HACCP",
+      "documents": "문서 검색",
+      "production": "생산 운영"
+    }
   }
 }

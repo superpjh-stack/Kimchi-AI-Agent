@@ -1,0 +1,22 @@
+name: Lighthouse CI
+on:
+  push:
+    branches: [master, main]
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    env:
+      DEV_AUTH_BYPASS: 'true'
+      JWT_SECRET: 'test-secret-32-characters-long-x'
+      OPENAI_API_KEY: 'sk-test'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci && npm run build
+      - run: npm run start &
+      - run: sleep 5
+      - run: npx lhci autorun

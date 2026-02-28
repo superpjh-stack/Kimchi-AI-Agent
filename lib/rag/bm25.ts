@@ -95,6 +95,20 @@ class BM25Index {
     return this.docs.size;
   }
 
+  /** SC2: 인덱스 직렬화 — 파일 영구화용 */
+  serialize(): { docs: [string, string[]][]; df: [string, number][] } {
+    return {
+      docs: [...this.docs.entries()],
+      df: [...this.df.entries()],
+    };
+  }
+
+  /** SC2: 직렬화된 스냅샷에서 인덱스 복원 */
+  deserialize(data: { docs: [string, string[]][]; df: [string, number][] }): void {
+    this.docs = new Map(data.docs);
+    this.df = new Map(data.df);
+  }
+
   private removeKey(key: string): void {
     const tokens = this.docs.get(key);
     if (!tokens) return;
@@ -107,5 +121,24 @@ class BM25Index {
   }
 }
 
-// 모듈 레벨 싱글턴 (서버 재시작 시 초기화 — vectorStore와 동일 생명주기)
+// 모듈 레벨 싱글턴 — pipeline.ts 초기화 시 파일에서 복원
 export const bm25Index = new BM25Index();
+
+let _bm25Restored = false;
+
+/** SC2: 서버 시작 시 1회 호출 — 파일에서 이전 인덱스 복원 */
+export function restoreBM25FromFile(): void {
+  if (_bm25Restored) return;
+  _bm25Restored = true;
+  try {
+    // 동적 require로 순환 참조 방지
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { loadBM25Index } = require('@/lib/db/file-store') as typeof import('@/lib/db/file-store');
+    const snapshot = loadBM25Index();
+    if (snapshot) {
+      bm25Index.deserialize(snapshot);
+    }
+  } catch {
+    // 파일 없거나 파싱 실패 시 빈 인덱스로 유지
+  }
+}

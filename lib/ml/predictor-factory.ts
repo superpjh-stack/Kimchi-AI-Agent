@@ -1,5 +1,6 @@
-// lib/ml/predictor-factory.ts — getPredictor() 싱글톤 팩토리
+// lib/ml/predictor-factory.ts — getPredictor() + createPredictor() (A/B 지원)
 import { RuleBasedPredictor } from './rule-based-predictor';
+import { experimentManager } from './ab-manager';
 import { createLogger } from '@/lib/logger';
 import type { IPredictor } from './predictor';
 
@@ -7,6 +8,7 @@ const log = createLogger('ml.predictor-factory');
 
 let _predictor: IPredictor | null = null;
 
+/** 싱글턴 — 기본 predictor (A/B 분기 없음) */
 export function getPredictor(): IPredictor {
   if (_predictor) return _predictor;
 
@@ -22,4 +24,31 @@ export function getPredictor(): IPredictor {
   }
 
   return _predictor;
+}
+
+/** 요청별 predictor — A/B 실험 활성화 시 variant에 따라 분기 */
+export function createPredictor(options?: { batchId?: string }): IPredictor {
+  const experiment = experimentManager.getActiveExperiment();
+
+  if (experiment && options?.batchId) {
+    try {
+      const assignment = experimentManager.assign(options.batchId, experiment.id);
+      const variant    = experiment.variants.find((v) => v.id === assignment.variantId);
+
+      if (variant?.predictorType === 'remote_ml' && process.env.ML_SERVER_URL) {
+        const { RemoteMLPredictor } = require('./remote-predictor') as typeof import('./remote-predictor');
+        log.info({ variantId: variant.id, type: 'remote_ml' }, 'A/B: remote_ml variant');
+        return new RemoteMLPredictor(process.env.ML_SERVER_URL, new RuleBasedPredictor());
+      }
+      if (variant?.predictorType === 'enhanced_rule') {
+        log.info({ variantId: variant.id, type: 'enhanced_rule' }, 'A/B: enhanced_rule variant');
+        return new RuleBasedPredictor();
+      }
+      // 'rule_based' — 기본 predictor 반환
+    } catch (err) {
+      log.warn({ err }, 'A/B assignment failed — falling back to default');
+    }
+  }
+
+  return getPredictor();
 }

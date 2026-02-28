@@ -9,7 +9,7 @@ import type { Message } from '@/types';
 export const runtime = 'nodejs';
 
 async function getConversation(
-  req: AuthRequest,
+  req: Request,
   ...args: unknown[]
 ): Promise<Response> {
   const { params } = args[0] as { params: { id: string } };
@@ -80,5 +80,7 @@ async function deleteConversation(
   return ok({ deleted: true });
 }
 
-export const GET    = withAuth(getConversation,    { permissions: ['conversations:read'] });
+// TODO(Sprint2): GET도 로그인 UI 완성 후 withAuth 재활성화
+// export const GET = withAuth(getConversation, { permissions: ['conversations:read'] });
+export const GET    = getConversation;
 export const DELETE = withAuth(deleteConversation, { permissions: ['conversations:delete'] });

@@ -5,6 +5,7 @@ import { useSensorHistory } from '@/hooks/useSensorHistory';
 import ProcessStatusPanel from '@/components/process/ProcessStatusPanel';
 import MLPredictionWidget from './MLPredictionWidget';
 import SensorChart from './SensorChart';
+import { ABTestWidget } from '@/components/ml/ABTestWidget';
 
 const CHARTS = [
   {
@@ -49,6 +50,9 @@ export default function DashboardPanel() {
           <ProcessStatusPanel />
           <MLPredictionWidget sensors={sensors} />
         </div>
+
+        {/* ML A/B 테스트 위젯 (Sprint 3) */}
+        <ABTestWidget />
 
         {/* 베타 만족도 위젯 (FR-06) */}
         <div className="bg-white rounded-lg border border-gray-200 p-4">

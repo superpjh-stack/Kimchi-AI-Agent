@@ -3,9 +3,13 @@
 import { chunkText } from './chunker';
 import { embed, embedBatch } from './embedder';
 import { toDocumentSource, getVectorStore } from './retriever';
-import { bm25Index } from './bm25';
+import { bm25Index, restoreBM25FromFile } from './bm25';
+import { saveBM25Index } from '@/lib/db/file-store';
 import { createLogger } from '@/lib/logger';
 import type { DocumentSource, ChunkingOptions } from '@/types';
+
+// SC2: 서버 시작 시 파일에서 BM25 인덱스 복원
+restoreBM25FromFile();
 
 const log = createLogger('rag.pipeline');
 
@@ -141,6 +145,9 @@ export async function ingestDocument(
     const key = `${chunk.metadata.docId}::${chunk.index}`;
     bm25Index.add(key, chunk.text);
   }
+
+  // SC2: BM25 인덱스 파일 영구화 (비동기)
+  saveBM25Index(bm25Index.serialize());
 
   return chunks.length;
 }

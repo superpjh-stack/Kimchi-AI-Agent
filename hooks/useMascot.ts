@@ -17,6 +17,29 @@ const STATE_RESET_DELAY: Record<MascotState, number> = {
   sleeping: 0,       // sleeping도 자동 해제 안 함
 };
 
+// 비행 위치 계산 (bottom-right 기준 음수 offset)
+function getRandomFlyTarget(): { x: number; y: number } {
+  if (typeof window === 'undefined') return { x: 0, y: 0 };
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return { x: 0, y: 0 };
+  const maxDx = window.innerWidth - 100;
+  const maxDy = window.innerHeight - 100;
+  return {
+    x: -(Math.random() * maxDx * 0.7 + maxDx * 0.1),
+    y: -(Math.random() * maxDy * 0.7 + maxDy * 0.1),
+  };
+}
+
+// 상태별 비행 여부 — idle/sleeping은 홈으로 복귀
+const SHOULD_FLY: Record<MascotState, boolean> = {
+  idle: false,
+  sleeping: false,
+  thinking: true,
+  success: true,
+  error: true,
+  celebrating: true,
+  searching: true,
+};
+
 function loadSettings(): MascotSettings {
   if (typeof window === 'undefined') return DEFAULT_SETTINGS;
   try {
@@ -41,7 +64,9 @@ export function useMascot() {
   const [phrase, setPhrase] = useState<MascotPhrase | null>(null);
   const [showSpeech, setShowSpeech] = useState(false);
   const [settings, setSettings] = useState<MascotSettings>(DEFAULT_SETTINGS);
+  const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const flyTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   // 마운트 시 설정 로드 + 야간 체크
   useEffect(() => {
@@ -55,10 +80,13 @@ export function useMascot() {
   }, []);
 
   const setState = useCallback((newState: MascotState, forcedPhrase?: string) => {
+    // 기존 타이머 초기화
     if (resetTimerRef.current) {
       clearTimeout(resetTimerRef.current);
       resetTimerRef.current = null;
     }
+    flyTimersRef.current.forEach(clearTimeout);
+    flyTimersRef.current = [];
 
     setStateInternal(newState);
 
@@ -69,11 +97,28 @@ export function useMascot() {
     }
     setShowSpeech(true);
 
+    // 비행 로직
+    if (SHOULD_FLY[newState]) {
+      if (newState === 'celebrating') {
+        // 축하 상태: 3곳 순차 비행
+        setPosition(getRandomFlyTarget());
+        const t1 = setTimeout(() => setPosition(getRandomFlyTarget()), 700);
+        const t2 = setTimeout(() => setPosition(getRandomFlyTarget()), 1400);
+        flyTimersRef.current = [t1, t2];
+      } else {
+        setPosition(getRandomFlyTarget());
+      }
+    } else {
+      // idle / sleeping → 홈으로 복귀
+      setPosition({ x: 0, y: 0 });
+    }
+
     const delay = STATE_RESET_DELAY[newState];
     if (delay > 0) {
       resetTimerRef.current = setTimeout(() => {
         setStateInternal('idle');
         setShowSpeech(false);
+        setPosition({ x: 0, y: 0 }); // 홈 복귀
         resetTimerRef.current = null;
       }, delay);
     }
@@ -102,6 +147,7 @@ export function useMascot() {
   useEffect(() => {
     return () => {
       if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+      flyTimersRef.current.forEach(clearTimeout);
     };
   }, []);
 
@@ -110,6 +156,7 @@ export function useMascot() {
     phrase,
     showSpeech,
     settings,
+    position,
     setState,
     dismissSpeech,
     toggleEnabled,
