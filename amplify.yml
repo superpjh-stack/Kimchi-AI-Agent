@@ -1,0 +1,23 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        # Node.js 20 LTS 사용 (Amplify Compute 지원 버전)
+        - nvm use 20
+        - node --version
+        # 의존성 클린 설치
+        - npm ci
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    # Next.js SSR 빌드 산출물 (.next 전체)
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      # 빌드 캐시 — 재빌드 시간 단축
+      - node_modules/**/*
+      - .next/cache/**/*
