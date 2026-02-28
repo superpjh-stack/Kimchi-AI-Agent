@@ -122,37 +122,12 @@ data: {"type":"error","message":"..."}
 - Phase 4: `docs/archive/2026-02/kimchi-agent-phase4/` (Match Rate: 93.9%)
 - Phase 5: `docs/archive/2026-02/kimchi-agent-phase5/` (Match Rate: 98.2%)
 - 김치군 마스코트: `docs/archive/2026-02/kimchi-mascot/` (Match Rate: 97.0%)
+- Phase 6: `docs/archive/2026-02/kimchi-agent-phase6/` (Match Rate: 97.1%)
 
-### 현재 진행 중 — Phase 6
-- Plan: `docs/01-plan/features/kimchi-agent-phase6.plan.md` (v1.3)
-- Design: `docs/02-design/features/kimchi-agent-phase6.design.md` (v1.0)
-
-#### Sprint 1 완료 (보안 강화) — commit ba1a158
-- jose JWT + RBAC 3-role (admin/operator/viewer)
-- lib/auth/: jwt.ts, rbac.ts, credentials.ts, audit-logger.ts, auth-middleware.ts
-- lib/security/: file-validator.ts (magic bytes), input-sanitizer.ts (프롬프트 인젝션)
-- /api/auth/: login, logout, me, refresh 4개 라우트
-- 17개 API 라우트 전체 withAuth 적용 + 감사 로그
-- middleware.ts: CSP nonce + 보안 헤더
-- .eslintrc.json: no-console rule
-- exceljs로 xlsx 교체 (CVE 해결)
-
-#### Sprint 2 완료 (테스트 + 배포) — commit 971b346 + cde6aaf
-- 테스트: 61 → 164개 (auth 21개 + security 50개 + api 7개 + ab-manager 17개 추가)
-- playwright.config.ts + e2e/chat.spec.ts + e2e/i18n.spec.ts
-- .github/workflows/e2e.yml + lighthouse.yml
-
-#### Sprint 3 완료 (ML A/B 테스트) — commit cde6aaf
-- lib/ml/ab-test.ts: Experiment/Variant/Assignment 타입
-- lib/ml/ab-manager.ts: ExperimentManager (djb2 해시 기반 결정론적 배분)
-- app/api/ml/experiments/: POST/GET + [id] GET/PATCH + [id]/results GET
-- components/ml/ABTestWidget.tsx: 대시보드 위젯 (30s 폴링)
-- lib/ml/predictor-factory.ts: createPredictor() A/B variant 분기 추가
-
-#### Sprint 4 대기: Multi-tenant AsyncLocalStorage
-
-### 환경 변수 추가 필요 (Phase 6)
+### 환경 변수 (Phase 6에서 추가)
 - `JWT_SECRET`: 필수 (최소 32바이트)
 - `AUTH_USERS`: JSON 배열 (bcrypt hash + role)
 - `JWT_ACCESS_TTL`: 선택 (기본 3600)
 - `JWT_REFRESH_TTL`: 선택 (기본 604800)
+- `TENANT_MODE`: 선택 (`single` / `multi`, 기본 `single`)
+- `DEFAULT_TENANT_ID`: 선택 (기본 `default`)

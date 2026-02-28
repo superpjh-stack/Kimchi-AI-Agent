@@ -11,6 +11,15 @@
       "startedAt": "2026-02-28T00:00:00.000Z",
       "archivedAt": "2026-02-28T13:54:57.827Z",
       "archivedTo": "docs/archive/2026-02/kimchi-mascot/"
+    },
+    "kimchi-agent-phase6": {
+      "phase": "archived",
+      "matchRate": 97.1,
+      "iterationCount": 1,
+      "note": "Security+Quality+Scale: JWT/RBAC, 247 tests, ML A/B, Multi-tenant FR-38~45",
+      "startedAt": "2026-02-28T00:00:00.000Z",
+      "archivedAt": "2026-02-28T23:50:00.000Z",
+      "archivedTo": "docs/archive/2026-02/kimchi-agent-phase6/"
     }
   },
   "activeFeatures": [
