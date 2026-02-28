@@ -2,7 +2,10 @@
 import { ok, err } from '@/lib/utils/api-response';
 import { getPredictor } from '@/lib/ml/predictor-factory';
 import { PredictionCache, makeQualityKey } from '@/lib/ml/prediction-cache';
+import { createLogger } from '@/lib/logger';
 import type { QualityInput, QualityPrediction } from '@/lib/ml/predictor';
+
+const log = createLogger('api.ml.quality');
 
 export const runtime = 'nodejs';
 
@@ -32,7 +35,7 @@ export async function POST(req: Request): Promise<Response> {
     cache.set(cacheKey, prediction);
     return ok({ ...prediction, cached: false });
   } catch (e) {
-    console.error('[/api/ml/quality]', e);
+    log.error({ err: e }, 'Quality prediction failed');
     return err('PREDICTION_FAILED', '예측 실패', 500);
   }
 }

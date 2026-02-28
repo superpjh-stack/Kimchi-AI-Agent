@@ -37,6 +37,11 @@ export default function FermentationProgressBar({ pct, stage, confidence }: Prop
       </div>
       <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
         <div
+          role="progressbar"
+          aria-valuenow={pctDisplay}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`발효 진행률 ${pctDisplay}%`}
           className={clsx('h-full rounded-full transition-all duration-500', STAGE_COLORS[stage])}
           style={{ width: `${pctDisplay}%` }}
         />

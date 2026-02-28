@@ -4,7 +4,13 @@ import { chunkText } from './chunker';
 import { embed, embedBatch } from './embedder';
 import { toDocumentSource, getVectorStore } from './retriever';
 import { bm25Index } from './bm25';
+import { createLogger } from '@/lib/logger';
 import type { DocumentSource, ChunkingOptions } from '@/types';
+
+const log = createLogger('rag.pipeline');
+
+// S4-5: 쿼리 임베딩 캐시 — 30초 TTL
+const queryEmbeddingCache = new Map<string, { embedding: number[]; expiresAt: number }>();
 
 export interface RAGResult {
   context: string;
@@ -42,8 +48,20 @@ function reciprocalRankFusion(rankedLists: string[][], k = 60): string[] {
 export async function retrieveContext(query: string): Promise<RAGResult> {
   const store = await getVectorStore();
 
+  // S4-5: 쿼리 임베딩 캐시 조회 (30초 TTL)
+  const cacheKey = query.trim().toLowerCase();
+  const cached = queryEmbeddingCache.get(cacheKey);
+  const now = Date.now();
+  let queryVector: number[];
+  if (cached && cached.expiresAt > now) {
+    log.debug({ cacheKey }, 'Query embedding cache hit');
+    queryVector = cached.embedding;
+  } else {
+    queryVector = await embed(query);
+    queryEmbeddingCache.set(cacheKey, { embedding: queryVector, expiresAt: now + 30_000 });
+  }
+
   // 1. 벡터 검색 (시맨틱) — threshold 낮춰서 후보 확대 후 RRF가 재정렬
-  const queryVector = await embed(query);
   const vectorResults = await store.search(queryVector, { topK: 10, threshold: 0.3 });
 
   // 2. BM25 키워드 검색 (어휘)

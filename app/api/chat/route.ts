@@ -9,7 +9,11 @@ import { createSensorClient } from '@/lib/process/sensor-client';
 import { isBkendConfigured, conversationsDb, messagesDb } from '@/lib/db/bkend';
 import { addMessageToConversation, setConversationEntry, createConversationEntry, conversationStore } from '@/lib/db/conversations-store';
 import { generateTitle, truncate } from '@/lib/utils/markdown';
+import { createLogger } from '@/lib/logger';
+import { chatLimiter } from '@/lib/middleware/rate-limit';
 import type { ChatRequest, Message } from '@/types';
+
+const log = createLogger('api.chat');
 
 const USE_OLLAMA = !!process.env.OLLAMA_BASE_URL;
 const USE_OPENAI = !USE_OLLAMA && !!process.env.OPENAI_CHAT_MODEL;
@@ -19,6 +23,20 @@ export const runtime = 'nodejs';
 const MAX_MESSAGE_LENGTH = 10_000;
 
 export async function POST(req: Request): Promise<Response> {
+  // S4-4: Rate limiting
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  const { allowed, remaining: rlRemaining, resetAt } = chatLimiter.check(ip);
+  if (!allowed) {
+    return new Response(JSON.stringify({ error: 'Too many requests. Please try again later.' }), {
+      status: 429,
+      headers: {
+        'Content-Type': 'application/json',
+        'Retry-After': String(Math.ceil((resetAt - Date.now()) / 1000)),
+        'X-RateLimit-Remaining': String(rlRemaining),
+      },
+    });
+  }
+
   let body: ChatRequest;
 
   try {
@@ -84,8 +102,8 @@ export async function POST(req: Request): Promise<Response> {
       if (isBkendConfigured()) {
         // bkend.ai에 사용자 메시지 + AI 응답 저장
         await Promise.all([
-          messagesDb.create({ conversationId, role: 'user', content: message }).catch(console.error),
-          messagesDb.create({ conversationId, role: 'assistant', content: fullText, sources: ragResult.sources }).catch(console.error),
+          messagesDb.create({ conversationId, role: 'user', content: message }).catch((e: unknown) => log.error({ err: e }, 'messagesDb.create user failed')),
+          messagesDb.create({ conversationId, role: 'assistant', content: fullText, sources: ragResult.sources }).catch((e: unknown) => log.error({ err: e }, 'messagesDb.create assistant failed')),
         ]);
         // 대화 메타데이터 갱신 (없으면 새로 생성)
         conversationsDb.update(conversationId, {
@@ -97,7 +115,7 @@ export async function POST(req: Request): Promise<Response> {
             title: generateTitle(message),
             lastMessage: truncate(fullText, 50),
             messageCount: history.length + 2,
-          }).catch(console.error)
+          }).catch((e: unknown) => log.error({ err: e }, 'conversationsDb.create failed'))
         );
       } else {
         // 파일 저장소 폴백 — 대화가 없으면 새로 생성 후 저장
@@ -113,13 +131,13 @@ export async function POST(req: Request): Promise<Response> {
     };
 
     if (USE_OLLAMA) {
-      console.log(`[/api/chat] Using Ollama model: ${OLLAMA_MODEL}`);
+      log.info({ model: OLLAMA_MODEL }, 'Using Ollama model');
       sseStream = createOllamaSSEStream(chatMessages, ragResult.sources);
     } else if (USE_OPENAI) {
-      console.log(`[/api/chat] Using OpenAI model: ${OPENAI_CHAT_MODEL}`);
+      log.info({ model: OPENAI_CHAT_MODEL }, 'Using OpenAI model');
       sseStream = createOpenAISSEStream(chatMessages, ragResult.sources, onComplete, conversationId);
     } else {
-      console.log(`[/api/chat] Using Claude model: ${MODEL}`);
+      log.info({ model: MODEL }, 'Using Claude model');
       const stream = anthropic.messages.stream({
         model: MODEL,
         max_tokens: MAX_TOKENS,
@@ -131,7 +149,7 @@ export async function POST(req: Request): Promise<Response> {
 
     return new Response(sseStream, { headers: SSE_HEADERS });
   } catch (err) {
-    console.error('[/api/chat] Error:', err);
+    log.error({ err }, 'Unhandled error in POST /api/chat');
     const errorEvent = `data: ${JSON.stringify({ type: 'error', message: 'Internal server error' })}\n\n`;
 
     return new Response(errorEvent, {

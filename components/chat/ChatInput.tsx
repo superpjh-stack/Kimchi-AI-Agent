@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, KeyboardEvent } from 'react';
 import { Send } from 'lucide-react';
 import clsx from 'clsx';
+import { useTranslations } from 'next-intl';
 import VoiceInput from './VoiceInput';
 
 interface ChatInputProps {
@@ -14,10 +15,13 @@ interface ChatInputProps {
 export default function ChatInput({
   onSend,
   isStreaming = false,
-  placeholder = '김치 제조에 대해 무엇이든 물어보세요 🌶️',
+  placeholder,
 }: ChatInputProps) {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const t = useTranslations('chat');
+
+  const resolvedPlaceholder = placeholder ?? t('placeholder');
 
   const handleSend = useCallback(() => {
     const trimmed = input.trim();
@@ -69,7 +73,7 @@ export default function ChatInput({
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             disabled={isStreaming}
-            placeholder={isStreaming ? 'AI가 응답 중입니다...' : placeholder}
+            placeholder={isStreaming ? 'AI가 응답 중입니다...' : resolvedPlaceholder}
             rows={1}
             aria-label="메시지 입력"
             aria-disabled={isStreaming}

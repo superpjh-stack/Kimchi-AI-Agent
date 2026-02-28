@@ -3,6 +3,9 @@ import { generateTitle, truncate } from '@/lib/utils/markdown';
 import { loadConversations, saveConversations } from '@/lib/db/file-store';
 import type { Conversation, Message } from '@/types';
 
+// S4-8: 최대 대화 수 제한 — 메모리 누수 방지
+const MAX_CONVERSATIONS = 500;
+
 // 서버 시작 시 파일에서 로드
 export const conversationStore = loadConversations();
 
@@ -28,6 +31,11 @@ export function setConversationEntry(
   entry: { conversation: Conversation; messages: Message[] }
 ): void {
   conversationStore.set(id, entry);
+  // S4-8: 최대 대화 수 초과 시 가장 오래된 항목 제거
+  if (conversationStore.size > MAX_CONVERSATIONS) {
+    const oldestKey = conversationStore.keys().next().value;
+    if (oldestKey) conversationStore.delete(oldestKey);
+  }
   save();
 }
 

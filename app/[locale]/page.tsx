@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import dynamic from 'next/dynamic';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
@@ -9,22 +8,11 @@ import type { TabId } from '@/components/layout/BottomNav';
 import ChatWindow from '@/components/chat/ChatWindow';
 import DocumentUpload from '@/components/documents/DocumentUpload';
 import DocumentList from '@/components/documents/DocumentList';
+import DashboardPanel from '@/components/dashboard/DashboardPanel';
 import QuestionPanel from '@/components/questions/QuestionPanel';
 import { useChat } from '@/hooks/useChat';
 import { useConversations } from '@/hooks/useConversations';
 import { useAlerts } from '@/hooks/useAlerts';
-
-// S4-6: 무거운 패널은 dynamic import로 초기 번들 분리
-const DashboardPanel = dynamic(() => import('@/components/dashboard/DashboardPanel'), {
-  loading: () => <div className="animate-pulse h-40 bg-gray-100 rounded-lg" />,
-  ssr: false,
-});
-// MLPredictionPanel: 향후 독립 탭/뷰에서 사용 예정 (dynamic import 등록 완료)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const MLPredictionPanel = dynamic(() => import('@/components/ml/MLPredictionPanel'), {
-  loading: () => <div className="animate-pulse h-32 bg-gray-100 rounded-lg" />,
-  ssr: false,
-});
 
 export default function HomePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -103,7 +91,7 @@ export default function HomePage() {
         {/* Main area + right panel row */}
         <div className="flex flex-1 overflow-hidden">
           {/* Main area — on mobile, add bottom padding for BottomNav */}
-          <main className="flex-1 overflow-hidden pb-14 lg:pb-0 min-w-0">
+          <main id="main" className="flex-1 overflow-hidden pb-14 lg:pb-0 min-w-0">
             {bottomTab === 'dashboard' ? (
               <DashboardPanel />
             ) : bottomTab === 'documents' ? (

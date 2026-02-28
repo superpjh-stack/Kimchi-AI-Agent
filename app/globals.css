@@ -313,3 +313,17 @@ textarea:focus-visible {
 .bg-sidebar-gradient {
   background: linear-gradient(180deg, #FFF8F0 0%, #FFFFFF 100%);
 }
+
+/* 포커스 가시성 */
+*:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}
+
+/* 고대비 모드 */
+@media (prefers-contrast: high) {
+  :root {
+    --kimchi-red: #cc0000;
+    --kimchi-green: #006600;
+  }
+}

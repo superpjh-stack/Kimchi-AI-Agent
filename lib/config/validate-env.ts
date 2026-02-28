@@ -33,6 +33,40 @@ export function validateEnv(): ValidationResult {
     warnings.push('DATABASE_URL이 postgresql:// 또는 postgres://로 시작하지 않습니다.');
   }
 
+  // Phase 5 신규 변수 (선택적) 검증
+  // ML_CONFIDENCE_THRESHOLD: float 0~1
+  const mlThreshold = process.env.ML_CONFIDENCE_THRESHOLD;
+  if (mlThreshold !== undefined) {
+    const val = parseFloat(mlThreshold);
+    if (isNaN(val) || val < 0 || val > 1) {
+      warnings.push('ML_CONFIDENCE_THRESHOLD는 0~1 사이의 실수여야 합니다.');
+    }
+  }
+
+  // LOG_LEVEL: debug|info|warn|error
+  const logLevel = process.env.LOG_LEVEL;
+  if (logLevel !== undefined && !['debug', 'info', 'warn', 'error', 'fatal', 'trace'].includes(logLevel)) {
+    warnings.push('LOG_LEVEL은 trace|debug|info|warn|error|fatal 중 하나여야 합니다.');
+  }
+
+  // RATE_LIMIT_MAX: integer
+  const rateLimitMax = process.env.RATE_LIMIT_MAX;
+  if (rateLimitMax !== undefined) {
+    const val = parseInt(rateLimitMax, 10);
+    if (isNaN(val) || val <= 0) {
+      warnings.push('RATE_LIMIT_MAX는 양의 정수여야 합니다.');
+    }
+  }
+
+  // SENTRY_TRACES_SAMPLE_RATE: float 0~1
+  const sentrySampleRate = process.env.SENTRY_TRACES_SAMPLE_RATE;
+  if (sentrySampleRate !== undefined) {
+    const val = parseFloat(sentrySampleRate);
+    if (isNaN(val) || val < 0 || val > 1) {
+      warnings.push('SENTRY_TRACES_SAMPLE_RATE는 0~1 사이의 실수여야 합니다.');
+    }
+  }
+
   return {
     valid: errors.length === 0,
     warnings,

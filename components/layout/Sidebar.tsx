@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
 import { Plus, FileText, Settings, X, Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Conversation } from '@/types';
 import AlertBadge from '@/components/process/AlertBadge';
 
@@ -18,7 +19,10 @@ interface SidebarProps {
   warningAlerts?: number;
 }
 
-function groupConversationsByDate(conversations: Conversation[]) {
+function groupConversationsByDate(
+  conversations: Conversation[],
+  labels: { today: string; yesterday: string; thisWeek: string; older: string }
+) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterday = new Date(today);
@@ -27,10 +31,10 @@ function groupConversationsByDate(conversations: Conversation[]) {
   weekAgo.setDate(weekAgo.getDate() - 7);
 
   const groups: { label: string; emoji: string; items: Conversation[] }[] = [
-    { label: '오늘', emoji: '🌶️', items: [] },
-    { label: '어제', emoji: '🥬', items: [] },
-    { label: '이번 주', emoji: '🍚', items: [] },
-    { label: '이전', emoji: '🏭', items: [] },
+    { label: labels.today, emoji: '🌶️', items: [] },
+    { label: labels.yesterday, emoji: '🥬', items: [] },
+    { label: labels.thisWeek, emoji: '🍚', items: [] },
+    { label: labels.older, emoji: '🏭', items: [] },
   ];
 
   for (const conv of conversations) {
@@ -60,6 +64,8 @@ export default function Sidebar({
   warningAlerts = 0,
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const t = useTranslations('sidebar');
+  const tCommon = useTranslations('common');
 
   // Close on escape key
   useEffect(() => {
@@ -76,7 +82,12 @@ export default function Sidebar({
       )
     : conversations;
 
-  const groups = groupConversationsByDate(filteredConversations);
+  const groups = groupConversationsByDate(filteredConversations, {
+    today: t('today'),
+    yesterday: t('yesterday'),
+    thisWeek: '이번 주',
+    older: t('older'),
+  });
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-white border-r border-kimchi-beige-dark w-64 lg:w-72">
@@ -100,6 +111,7 @@ export default function Sidebar({
             type="button"
             onClick={onClose}
             className="lg:hidden p-1.5 rounded-lg text-brand-text-muted hover:text-brand-text-secondary hover:bg-kimchi-beige transition-colors"
+            aria-label={tCommon('close')}
           >
             <X size={18} />
           </button>
@@ -116,7 +128,7 @@ export default function Sidebar({
             hover:bg-kimchi-red-dark transition-colors shadow-sm"
         >
           <Plus size={16} />
-          새 대화 시작하기
+          {tCommon('newChat')}
         </button>
       </div>
 
@@ -128,7 +140,8 @@ export default function Sidebar({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="대화 검색..."
+            placeholder={t('searchPlaceholder')}
+            aria-label={t('conversations')}
             className="w-full pl-8 pr-3 py-2 text-xs rounded-lg border border-kimchi-beige-dark bg-kimchi-cream
               text-brand-text-primary placeholder-brand-text-muted
               focus:outline-none focus:ring-2 focus:ring-kimchi-orange/50 focus:border-transparent
@@ -142,7 +155,7 @@ export default function Sidebar({
         {conversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="text-4xl mb-3 animate-float">🥬</div>
-            <p className="text-sm text-brand-text-secondary font-medium">아직 대화가 없어요</p>
+            <p className="text-sm text-brand-text-secondary font-medium">{t('noConversations')}</p>
             <p className="text-xs text-brand-text-muted mt-1">김치에 대해 무엇이든 물어보세요!</p>
           </div>
         ) : filteredConversations.length === 0 ? (
@@ -193,14 +206,14 @@ export default function Sidebar({
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-brand-text-secondary hover:bg-kimchi-beige hover:text-brand-text-primary transition-colors text-sm"
         >
           <FileText size={16} />
-          문서 관리
+          {t('documentManagement')}
         </Link>
         <Link
           href="/settings"
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-brand-text-secondary hover:bg-kimchi-beige hover:text-brand-text-primary transition-colors text-sm"
         >
           <Settings size={16} />
-          설정
+          {t('settings')}
         </Link>
       </div>
     </div>

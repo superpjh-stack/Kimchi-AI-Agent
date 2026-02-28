@@ -3,6 +3,9 @@
 import type { Chunk } from './chunker';
 import type { DocumentSource } from '@/types';
 import { getEmbedder } from './embedder';
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('rag.retriever');
 
 export interface StoredEntry {
   vector: number[];
@@ -170,9 +173,19 @@ export function getDocumentStats(): DocumentStats {
 
 export class InMemoryVectorStore implements VectorStore {
   readonly storageType = 'memory' as const;
+  // S4-8: 최대 청크 수 제한 — 인메모리 누수 방지
+  private readonly maxChunks = 10_000;
 
   addDocuments(chunks: Chunk[], vectors: number[][]): void {
     addDocuments(chunks, vectors);
+    // S4-8: 최대 청크 수 초과 시 가장 오래된 항목 제거
+    if (vectorStore.size > this.maxChunks) {
+      const keysToDelete = [...vectorStore.keys()].slice(0, vectorStore.size - this.maxChunks);
+      for (const key of keysToDelete) {
+        vectorStore.delete(key);
+      }
+      log.warn({ removed: keysToDelete.length, remaining: vectorStore.size }, 'VectorStore: 최대 청크 수 초과, 오래된 항목 제거');
+    }
   }
 
   search(queryVector: number[], options?: { topK?: number; threshold?: number }): SearchResult[] {
@@ -217,16 +230,16 @@ export async function getVectorStore(): Promise<VectorStore> {
         const store = new PgVectorStore(dbUrl, embedder.dimension);
         await store.initialize();
         _storeInstance = store;
-        console.log(`[VectorStore] pgvector (dimension=${embedder.dimension}, embedder=${embedder.name})`);
+        log.info({ dimension: embedder.dimension, embedder: embedder.name }, 'VectorStore: pgvector initialized');
       } catch (err) {
         // Docker 미실행 등 연결 실패 시 인메모리로 폴백
-        console.warn('[VectorStore] pgvector 연결 실패, 인메모리로 폴백:', err instanceof Error ? err.message : err);
+        log.warn({ err: err instanceof Error ? err.message : err }, 'VectorStore: pgvector 연결 실패, 인메모리로 폴백');
         _storeInstance = new InMemoryVectorStore();
-        console.log('[VectorStore] Using in-memory backend (fallback)');
+        log.info('VectorStore: Using in-memory backend (fallback)');
       }
     } else {
       _storeInstance = new InMemoryVectorStore();
-      console.log('[VectorStore] Using in-memory backend');
+      log.info('VectorStore: Using in-memory backend');
     }
     return _storeInstance!;
   })();

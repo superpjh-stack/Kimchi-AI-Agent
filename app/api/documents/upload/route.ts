@@ -2,7 +2,11 @@
 import { ingestDocument } from '@/lib/rag/pipeline';
 import { created, err } from '@/lib/utils/api-response';
 import { isBkendConfigured, documentsDb } from '@/lib/db/bkend';
+import { createLogger } from '@/lib/logger';
+import { uploadLimiter } from '@/lib/middleware/rate-limit';
 import type { UploadResponse, ChunkingMethod, ChunkingOptions } from '@/types';
+
+const log = createLogger('api.documents.upload');
 
 export const runtime = 'nodejs';
 
@@ -62,6 +66,20 @@ async function extractText(file: File): Promise<string> {
 }
 
 export async function POST(req: Request): Promise<Response> {
+  // S4-4: Rate limiting
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  const { allowed, remaining: rlRemaining, resetAt } = uploadLimiter.check(ip);
+  if (!allowed) {
+    return new Response(JSON.stringify({ error: 'Too many requests. Please try again later.' }), {
+      status: 429,
+      headers: {
+        'Content-Type': 'application/json',
+        'Retry-After': String(Math.ceil((resetAt - Date.now()) / 1000)),
+        'X-RateLimit-Remaining': String(rlRemaining),
+      },
+    });
+  }
+
   let formData: FormData;
   try {
     formData = await req.formData();
@@ -137,13 +155,13 @@ export async function POST(req: Request): Promise<Response> {
         });
       } catch (dbErr) {
         // DB 저장 실패는 업로드 자체를 실패시키지 않음 — 로그만 기록
-        console.error('[/api/documents/upload] bkend.ai 저장 실패:', dbErr);
+        log.error({ err: dbErr }, 'bkend.ai 저장 실패');
       }
     }
 
     return created(response);
   } catch (e) {
-    console.error('[/api/documents/upload] Error:', e);
+    log.error({ err: e }, 'Failed to process document');
     return err('INTERNAL_ERROR', 'Failed to process document', 500);
   }
 }

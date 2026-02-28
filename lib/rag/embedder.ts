@@ -2,6 +2,10 @@
 // EMBEDDING_PROVIDER=openai (기본) | local | mock
 // EMBEDDING_MODEL=text-embedding-3-small (기본)
 
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('rag.embedder');
+
 const OPENAI_EMBEDDING_URL = 'https://api.openai.com/v1/embeddings';
 const EMBEDDING_DIMENSION = 1536;
 
@@ -122,7 +126,7 @@ class OllamaWithFallback implements EmbeddingProvider {
     try {
       return await this.primary.embed(text);
     } catch (err) {
-      console.warn('[embedder] Ollama 연결 실패, mock 폴백:', err instanceof Error ? err.message : err);
+      log.warn({ err: err instanceof Error ? err.message : err }, 'Ollama 연결 실패, mock 폴백');
       this.useFallback = true;
       return this.fallback.embed(text);
     }
@@ -133,7 +137,7 @@ class OllamaWithFallback implements EmbeddingProvider {
     try {
       return await this.primary.embedBatch(texts);
     } catch (err) {
-      console.warn('[embedder] Ollama 연결 실패, mock 폴백:', err instanceof Error ? err.message : err);
+      log.warn({ err: err instanceof Error ? err.message : err }, 'Ollama 연결 실패, mock 폴백');
       this.useFallback = true;
       return this.fallback.embedBatch(texts);
     }
@@ -174,17 +178,17 @@ export function getEmbedder(): EmbeddingProvider {
   else if (apiKey) {
     _provider = new OpenAIEmbedder(apiKey);
   } else if (isOllamaConfigured()) {
-    console.log('[embedder] OPENAI_API_KEY 없음 → Ollama 임베더 시도');
+    log.info('OPENAI_API_KEY 없음 → Ollama 임베더 시도');
     const { LocalEmbedder } = require('./embedder-local') as typeof import('./embedder-local');
     _provider = usePgvector ? new LocalEmbedder() : new OllamaWithFallback();
   } else {
     if (mode === 'openai') {
-      console.warn('[embedder] OPENAI_API_KEY 없음, Ollama 미설정 → mock embedding 사용');
+      log.warn('OPENAI_API_KEY 없음, Ollama 미설정 → mock embedding 사용');
     }
     _provider = new MockEmbedder();
   }
 
-  console.log(`[embedder] provider=${_provider.name}, dimension=${_provider.dimension}`);
+  log.info({ provider: _provider.name, dimension: _provider.dimension }, 'Embedder initialized');
   return _provider;
 }
 

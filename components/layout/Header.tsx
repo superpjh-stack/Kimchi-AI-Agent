@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { Menu, HelpCircle, Wifi, WifiOff } from 'lucide-react';
 import clsx from 'clsx';
+import { useTranslations } from 'next-intl';
 import type { TabId } from '@/components/layout/BottomNav';
+import LocaleSwitcher from '@/components/layout/LocaleSwitcher';
 
 interface HeaderProps {
   title?: string;
@@ -13,12 +15,6 @@ interface HeaderProps {
   activeTab?: TabId;
   onTabChange?: (tab: TabId) => void;
 }
-
-const DESKTOP_TABS: { id: TabId; label: string }[] = [
-  { id: 'dashboard', label: '대시보드' },
-  { id: 'chat', label: '채팅' },
-  { id: 'documents', label: '문서' },
-];
 
 function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(
@@ -50,6 +46,14 @@ export default function Header({
   onTabChange,
 }: HeaderProps) {
   const isOnline = useOnlineStatus();
+  const t = useTranslations('header');
+  const tAccessibility = useTranslations('accessibility');
+
+  const DESKTOP_TABS: { id: TabId; label: string }[] = [
+    { id: 'dashboard', label: t('dashboard') },
+    { id: 'chat', label: t('chat') },
+    { id: 'documents', label: t('documents') },
+  ];
 
   return (
     <header
@@ -61,7 +65,7 @@ export default function Header({
         type="button"
         onClick={onMenuToggle}
         className="lg:hidden flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg hover:bg-kimchi-cream transition-colors"
-        aria-label="메뉴 열기"
+        aria-label={tAccessibility('menuOpen')}
       >
         <Menu size={20} className="text-brand-text-secondary" />
       </button>
@@ -119,10 +123,13 @@ export default function Header({
         )}
       </div>
 
+      {/* Locale Switcher */}
+      <LocaleSwitcher />
+
       {/* Logo badge */}
       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-kimchi-red/10 rounded-full border border-kimchi-red/20">
         <span className="text-base">🌶️</span>
-        <span className="text-xs font-bold text-kimchi-red hidden sm:inline">김치공장 AI 도우미</span>
+        <span className="text-xs font-bold text-kimchi-red hidden sm:inline">{t('title')}</span>
       </div>
 
       {/* Question panel toggle — desktop */}
@@ -136,7 +143,7 @@ export default function Header({
               ? 'bg-kimchi-green/10 text-kimchi-green'
               : 'hover:bg-kimchi-cream text-brand-text-secondary'
           )}
-          aria-label="질문 목록 열기"
+          aria-label={questionPanelOpen ? tAccessibility('questionListClose') : tAccessibility('questionListOpen')}
           aria-pressed={questionPanelOpen}
         >
           <HelpCircle size={20} />

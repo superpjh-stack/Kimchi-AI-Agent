@@ -3,14 +3,32 @@ import { ok, err } from '@/lib/utils/api-response';
 import { getPredictor } from '@/lib/ml/predictor-factory';
 import { PredictionCache, makeFermentationKey } from '@/lib/ml/prediction-cache';
 import { predictionHistory } from '@/lib/ml/prediction-history';
+import { createLogger } from '@/lib/logger';
+import { mlLimiter } from '@/lib/middleware/rate-limit';
 import type { SensorData } from '@/lib/process/sensor-client';
 import type { FermentationPrediction } from '@/lib/ml/predictor';
+
+const log = createLogger('api.ml.predict');
 
 export const runtime = 'nodejs';
 
 const cache = new PredictionCache<FermentationPrediction>(30_000);
 
 export async function POST(req: Request): Promise<Response> {
+  // S4-4: Rate limiting
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  const { allowed, remaining: rlRemaining, resetAt } = mlLimiter.check(ip);
+  if (!allowed) {
+    return new Response(JSON.stringify({ error: 'Too many requests. Please try again later.' }), {
+      status: 429,
+      headers: {
+        'Content-Type': 'application/json',
+        'Retry-After': String(Math.ceil((resetAt - Date.now()) / 1000)),
+        'X-RateLimit-Remaining': String(rlRemaining),
+      },
+    });
+  }
+
   let body: { batchId?: string; sensors: SensorData };
   try {
     body = await req.json();
@@ -48,7 +66,7 @@ export async function POST(req: Request): Promise<Response> {
 
     return ok({ batchId: body.batchId ?? body.sensors.batchId, ...prediction, cached: false });
   } catch (e) {
-    console.error('[/api/ml/predict]', e);
+    log.error({ err: e }, 'Prediction failed');
     return err('PREDICTION_FAILED', '예측 실패', 500);
   }
 }

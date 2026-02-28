@@ -122,6 +122,15 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
           onClick={() => inputRef.current?.click()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              inputRef.current?.click();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="파일을 드래그하거나 클릭하여 업로드"
           className={clsx(
             'border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200',
             isDragging
