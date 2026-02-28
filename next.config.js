@@ -1,5 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { withSentryConfig } = require('@sentry/nextjs');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const createNextIntlPlugin = require('next-intl/plugin');
+
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -30,7 +34,7 @@ const nextConfig = {
   },
 };
 
-module.exports = withSentryConfig(nextConfig, {
+module.exports = withSentryConfig(withNextIntl(nextConfig), {
   // 소스맵 업로드 (프로덕션 배포 시 SENTRY_AUTH_TOKEN 필요)
   silent: true,
   hideSourceMaps: true,

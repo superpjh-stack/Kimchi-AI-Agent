@@ -5,8 +5,10 @@
     "platform": "claude",
     "level": "Enterprise"
   },
-  "currentFeature": "kimchi-agent-phase5",
-  "phase": "completed",
+  "currentFeature": null,
+  "phase": "archived",
   "matchRate": 98.2,
-  "planCreatedAt": "2026-02-28"
+  "planCreatedAt": "2026-02-28",
+  "archivedAt": "2026-02-28",
+  "archivedTo": "docs/archive/2026-02/kimchi-agent-phase5/"
 }

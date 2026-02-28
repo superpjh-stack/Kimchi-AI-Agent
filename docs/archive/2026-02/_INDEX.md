@@ -5,6 +5,7 @@
 | kimchi-agent-phase2 | 92.2% | 2026-02-27 | 2026-02-27 | `docs/archive/2026-02/kimchi-agent-phase2/` |
 | kimchi-agent-phase3 | 91.0% | 2026-02-28 | 2026-02-28 | `docs/archive/2026-02/kimchi-agent-phase3/` |
 | kimchi-agent-phase4 | 93.9% | 2026-02-28 | 2026-02-28 | `docs/archive/2026-02/kimchi-agent-phase4/` |
+| kimchi-agent-phase5 | 98.2% | 2026-02-28 | 2026-02-28 | `docs/archive/2026-02/kimchi-agent-phase5/` |
 
 ## kimchi-agent-phase2
 
@@ -32,3 +33,12 @@
 - **Report**: `kimchi-agent-phase4.report.md`
 
 **Summary**: Kimchi-Agent Phase 4 — Vercel 프로덕션 배포, Jest 61 tests + GitHub Actions CI/CD, 베타 테스트 전략, ML 예측 캐싱(TTL 30s) + Sentry 에러 모니터링 + Vercel Analytics. 4 Sprint, 1회 이터레이션(85.7%→93.9%), Match Rate 93.9%.
+
+## kimchi-agent-phase5
+
+- **Plan**: `kimchi-agent-phase5.plan.md`
+- **Design**: `kimchi-agent-phase5.design.md`
+- **Analysis**: `kimchi-agent-phase5.analysis.md`
+- **Report**: `kimchi-agent-phase5.report.md`
+
+**Summary**: Kimchi-Agent Phase 5 — 베타 피드백 반영(SSE keep-alive/QuickQuestions/DocumentList 페이지네이션/MessageBubble 접기), ML 고도화(MLConfig 외부화/ConfidenceBar/예측 이력/thresholds API), next-intl i18n(KO/EN 79키/LocaleSwitcher), WCAG 접근성, pino 구조화 로깅, Rate Limit(429), 쿼리 임베딩 캐시, next/font 마이그레이션. 4 Sprint + 1회 이터레이션(94.8%→98.2%), Match Rate 98.2%.
