@@ -6,8 +6,8 @@
     "level": "Enterprise"
   },
   "currentFeature": "kimchi-agent-phase6",
-  "phase": "plan",
+  "phase": "design",
   "matchRate": null,
   "planCreatedAt": "2026-02-28",
-  "designCreatedAt": null
+  "designCreatedAt": "2026-02-28"
 }
