@@ -134,6 +134,155 @@ body {
   animation: message-slide-in-left 0.25s ease-out;
 }
 
+/* ========================================
+   김치군 마스코트 애니메이션
+   ======================================== */
+
+.kimchi-mascot {
+  will-change: transform;
+  transition: transform 0.3s ease-out;
+}
+
+/* idle: 숨쉬기 */
+@keyframes mascot-breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%       { transform: translateY(-3px) scale(1.02); }
+}
+.kimchi-mascot--idle {
+  animation: mascot-breathe 3s ease-in-out infinite;
+}
+
+/* thinking: 좌우 흔들림 */
+@keyframes mascot-wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25%       { transform: rotate(-8deg); }
+  75%       { transform: rotate(8deg); }
+}
+.kimchi-mascot--thinking {
+  animation: mascot-wobble 0.8s ease-in-out infinite;
+}
+
+/* success: 폴짝 점프 */
+@keyframes mascot-jump {
+  0%   { transform: translateY(0) scale(1); }
+  30%  { transform: translateY(-12px) scale(1.05); }
+  50%  { transform: translateY(-14px) scale(1.08); }
+  70%  { transform: translateY(-8px) scale(1.03); }
+  100% { transform: translateY(0) scale(1); }
+}
+.kimchi-mascot--success {
+  animation: mascot-jump 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* error: 부들부들 */
+@keyframes mascot-shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-4px); }
+  40%       { transform: translateX(4px); }
+  60%       { transform: translateX(-3px); }
+  80%       { transform: translateX(3px); }
+}
+.kimchi-mascot--error {
+  animation: mascot-shake 0.5s ease-in-out;
+}
+
+/* celebrating: 환호 점프 반복 */
+@keyframes mascot-celebrate {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25%       { transform: translateY(-10px) rotate(-5deg); }
+  50%       { transform: translateY(0) rotate(0deg); }
+  75%       { transform: translateY(-10px) rotate(5deg); }
+}
+.kimchi-mascot--celebrating {
+  animation: mascot-celebrate 0.8s ease-in-out 3;
+}
+
+/* searching: 두리번 */
+@keyframes mascot-peek {
+  0%, 100% { transform: translateX(0); }
+  30%       { transform: translateX(-5px) rotate(-3deg); }
+  70%       { transform: translateX(5px) rotate(3deg); }
+}
+.kimchi-mascot--searching {
+  animation: mascot-peek 1.2s ease-in-out infinite;
+}
+
+/* sleeping: 느린 기울기 */
+@keyframes mascot-sleep {
+  0%, 100% { transform: rotate(0deg); }
+  50%       { transform: rotate(8deg); }
+}
+.kimchi-mascot--sleeping {
+  animation: mascot-sleep 4s ease-in-out infinite;
+}
+
+/* Zzz 부유 */
+@keyframes mascot-zzz {
+  0%, 100% { opacity: 0.3; transform: translateY(0); }
+  50%       { opacity: 0.8; transform: translateY(-4px); }
+}
+.kimchi-mascot__zzz text {
+  animation: mascot-zzz 2s ease-in-out infinite;
+}
+.kimchi-mascot__zzz text:nth-child(2) { animation-delay: 0.3s; }
+.kimchi-mascot__zzz text:nth-child(3) { animation-delay: 0.6s; }
+
+/* 팔 애니메이션 */
+@keyframes arm-wave-left {
+  0%, 100% { transform: rotate(0deg); }
+  50%       { transform: rotate(-20deg); }
+}
+@keyframes arm-wave-right {
+  0%, 100% { transform: rotate(0deg); }
+  50%       { transform: rotate(20deg); }
+}
+.kimchi-mascot--success .kimchi-mascot__arm-left,
+.kimchi-mascot--celebrating .kimchi-mascot__arm-left {
+  transform-origin: 14px 32px;
+  animation: arm-wave-left 0.4s ease-in-out 2;
+}
+.kimchi-mascot--success .kimchi-mascot__arm-right,
+.kimchi-mascot--celebrating .kimchi-mascot__arm-right {
+  transform-origin: 46px 32px;
+  animation: arm-wave-right 0.4s ease-in-out 2;
+}
+
+/* 말풍선 페이드 */
+@keyframes speech-fade-in {
+  0%   { opacity: 0; transform: translateY(4px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes speech-fade-out {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-4px) scale(0.95); }
+}
+.mascot-speech--enter {
+  animation: speech-fade-in 0.25s ease-out forwards;
+}
+.mascot-speech--exit {
+  animation: speech-fade-out 0.25s ease-in forwards;
+}
+
+/* 접근성: 모션 축소 */
+@media (prefers-reduced-motion: reduce) {
+  .kimchi-mascot,
+  .kimchi-mascot--idle,
+  .kimchi-mascot--thinking,
+  .kimchi-mascot--success,
+  .kimchi-mascot--error,
+  .kimchi-mascot--celebrating,
+  .kimchi-mascot--searching,
+  .kimchi-mascot--sleeping,
+  .kimchi-mascot__zzz text,
+  .kimchi-mascot__arm-left,
+  .kimchi-mascot__arm-right,
+  .mascot-speech--enter,
+  .mascot-speech--exit {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 /* Markdown content styles */
 .markdown-content h1,
 .markdown-content h2,

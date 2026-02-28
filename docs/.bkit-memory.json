@@ -1,13 +1,13 @@
 {
-  "sessionCount": 29,
+  "sessionCount": 32,
   "lastSession": {
-    "startedAt": "2026-02-28T06:00:00.000Z",
+    "startedAt": "2026-02-28T08:09:40.907Z",
     "platform": "claude",
     "level": "Enterprise"
   },
   "currentFeature": "kimchi-mascot",
-  "phase": "design",
-  "matchRate": null,
+  "phase": "archived",
+  "matchRate": 97,
   "planCreatedAt": "2026-02-28",
   "designCreatedAt": "2026-02-28"
 }

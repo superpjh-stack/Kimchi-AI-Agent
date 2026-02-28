@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import type { Message, SSEEvent, ChatStatus } from '@/types';
+import { dispatchMascotEvent } from '@/lib/utils/mascot-event';
 
 function makeId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -46,6 +47,7 @@ export function useChat(conversationId?: string) {
 
       setIsStreaming(true);
       setChatStatus('rag-searching');
+      dispatchMascotEvent('searching', 'chat');
       if (doneTimerRef.current) clearTimeout(doneTimerRef.current);
       abortRef.current = new AbortController();
 
@@ -82,39 +84,45 @@ export function useChat(conversationId?: string) {
             const jsonStr = line.slice(6).trim();
             if (!jsonStr) continue;
 
+            // JSON 파싱만 내부 try-catch로 감싸고, 이벤트 처리는 바깥에서 실행
+            // (error 이벤트의 throw가 parseErr catch에 삼켜지는 버그 방지)
+            let event: SSEEvent;
             try {
-              const event = JSON.parse(jsonStr) as SSEEvent;
-
-              if (event.type === 'token') {
-                setChatStatus((prev) => prev === 'rag-searching' ? 'llm-generating' : prev);
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === assistantId
-                      ? { ...m, content: m.content + event.content }
-                      : m
-                  )
-                );
-              } else if (event.type === 'sources') {
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === assistantId
-                      ? { ...m, sources: event.sources }
-                      : m
-                  )
-                );
-              } else if (event.type === 'done') {
-                setChatStatus('done');
-                doneTimerRef.current = setTimeout(() => setChatStatus('idle'), 1500);
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === assistantId ? { ...m, isStreaming: false } : m
-                  )
-                );
-              } else if (event.type === 'error') {
-                throw new Error(event.message);
-              }
-            } catch (parseErr) {
+              event = JSON.parse(jsonStr) as SSEEvent;
+            } catch {
               // Skip malformed SSE lines
+              continue;
+            }
+
+            if (event.type === 'token') {
+              if (chatStatus === 'rag-searching') dispatchMascotEvent('thinking', 'chat');
+              setChatStatus((prev) => prev === 'rag-searching' ? 'llm-generating' : prev);
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantId
+                    ? { ...m, content: m.content + event.content }
+                    : m
+                )
+              );
+            } else if (event.type === 'sources') {
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantId
+                    ? { ...m, sources: event.sources }
+                    : m
+                )
+              );
+            } else if (event.type === 'done') {
+              dispatchMascotEvent('success', 'chat');
+              setChatStatus('done');
+              doneTimerRef.current = setTimeout(() => setChatStatus('idle'), 1500);
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantId ? { ...m, isStreaming: false } : m
+                )
+              );
+            } else if (event.type === 'error') {
+              throw new Error(event.message);
             }
           }
         }
@@ -123,6 +131,7 @@ export function useChat(conversationId?: string) {
 
         const msg = err instanceof Error ? err.message : '알 수 없는 오류';
         setError(msg);
+        dispatchMascotEvent('error', 'chat');
         setChatStatus('error');
         doneTimerRef.current = setTimeout(() => setChatStatus('idle'), 2000);
         setMessages((prev) =>

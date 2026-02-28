@@ -14,6 +14,7 @@ import { useChat } from '@/hooks/useChat';
 import { useConversations } from '@/hooks/useConversations';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
+import KimchiMascotContainer from '@/components/mascot/KimchiMascotContainer';
 
 // 무거운 패널은 dynamic import로 초기 번들 분리
 const DashboardPanel = dynamic(() => import('@/components/dashboard/DashboardPanel'), {
@@ -154,6 +155,9 @@ export default function HomePage() {
         onConversationsOpen={() => setSidebarOpen(true)}
         onQuestionsOpen={() => setBottomTab('questions')}
       />
+
+      {/* 김치군 마스코트 */}
+      <KimchiMascotContainer />
     </div>
   );
 }

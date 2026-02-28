@@ -113,5 +113,13 @@
     "languageSwitch": "언어 변경",
     "questionListOpen": "질문 목록 열기",
     "questionListClose": "질문 목록 닫기"
+  },
+  "mascot": {
+    "label": "김치군 마스코트",
+    "turnOn": "김치군 켜기",
+    "turnOff": "김치군 끄기",
+    "speechOn": "대사 켜기",
+    "speechOff": "대사 끄기",
+    "settings": "김치군 설정"
   }
 }

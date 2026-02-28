@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import type { KimchiDocument, ChunkingOptions } from '@/types';
 import ChunkingOptionsSelector from './ChunkingOptions';
 import { CHUNKING_STRATEGIES } from '@/lib/rag/chunker';
+import { dispatchMascotEvent } from '@/lib/utils/mascot-event';
 
 interface DocumentUploadProps {
   onUploadComplete?: (doc: KimchiDocument) => void;
@@ -87,6 +88,7 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
       setUploadedDoc(doc);
       setStatus('success');
       setStatusMsg(`${doc.chunks}개 청크로 처리 완료`);
+      dispatchMascotEvent('celebrating', 'upload');
       onUploadComplete?.(doc);
     } catch (err) {
       setStatus('error');

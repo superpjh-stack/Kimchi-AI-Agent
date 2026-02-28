@@ -113,5 +113,13 @@
     "languageSwitch": "Change language",
     "questionListOpen": "Open question list",
     "questionListClose": "Close question list"
+  },
+  "mascot": {
+    "label": "Kimchi-kun Mascot",
+    "turnOn": "Turn on Kimchi-kun",
+    "turnOff": "Turn off Kimchi-kun",
+    "speechOn": "Turn on speech",
+    "speechOff": "Turn off speech",
+    "settings": "Kimchi-kun settings"
   }
 }

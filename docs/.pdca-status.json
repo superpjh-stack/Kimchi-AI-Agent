@@ -1,6 +1,16 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-02-28T05:21:28.377Z",
+  "lastUpdated": "2026-02-28T06:07:58.079Z",
+  "archived": {
+    "kimchi-mascot": {
+      "phase": "archived",
+      "matchRate": 97,
+      "iterationCount": 0,
+      "startedAt": "2026-02-28T00:00:00.000Z",
+      "archivedAt": "2026-02-28T09:00:00.000Z",
+      "archivedTo": "docs/archive/2026-02/kimchi-mascot/"
+    }
+  },
   "activeFeatures": [
     "questions",
     "layout",
@@ -28,7 +38,9 @@
     "[locale]",
     "middleware",
     "upload",
-    "kimchi-agent-phase5"
+    "kimchi-agent-phase5",
+    "mascot",
+    "kimchi-mascot — Gap 분석"
   ],
   "primaryFeature": "questions",
   "features": {
@@ -145,9 +157,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-27T14:13:36.276Z",
-        "lastUpdated": "2026-02-28T03:56:42.430Z"
+        "lastUpdated": "2026-02-28T05:41:44.706Z"
       },
-      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\app\\[locale]\\documents\\page.tsx"
+      "lastFile": "/c/AI Make/12 Kimchi-AI-Agent/Kimchi-AI-Agent/components/documents/DocumentUpload.tsx"
     },
     "Kimchi-AI-Agent": {
       "phase": "do",
@@ -158,9 +170,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-27T14:36:05.173Z",
-        "lastUpdated": "2026-02-28T05:20:48.284Z"
+        "lastUpdated": "2026-02-28T06:07:58.079Z"
       },
-      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\hooks\\useConversations.ts"
+      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\hooks\\useChat.ts"
     },
     "chat": {
       "phase": "do",
@@ -348,9 +360,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-28T00:14:05.481Z",
-        "lastUpdated": "2026-02-28T05:21:28.377Z"
+        "lastUpdated": "2026-02-28T05:41:59.897Z"
       },
-      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\app\\[locale]\\page.tsx"
+      "lastFile": "/c/AI Make/12 Kimchi-AI-Agent/Kimchi-AI-Agent/app/[locale]/page.tsx"
     },
     "middleware": {
       "phase": "do",
@@ -391,6 +403,33 @@
       },
       "previousPhase": "check",
       "autoAdvanced": true
+    },
+    "mascot": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-02-28T05:39:25.234Z",
+        "lastUpdated": "2026-02-28T05:40:53.000Z"
+      },
+      "lastFile": "/c/AI Make/12 Kimchi-AI-Agent/Kimchi-AI-Agent/components/mascot/KimchiMascotContainer.tsx"
+    },
+    "kimchi-mascot — Gap 분석": {
+      "phase": "act",
+      "phaseNumber": 5,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-02-28T05:52:02.863Z",
+        "lastUpdated": "2026-02-28T05:52:02.866Z"
+      },
+      "previousPhase": "check",
+      "autoAdvanced": true
     }
   },
   "pipeline": {
@@ -401,7 +440,7 @@
   "session": {
     "startedAt": "2026-02-27T12:14:33.087Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-02-28T05:21:28.377Z"
+    "lastActivity": "2026-02-28T06:07:58.079Z"
   },
   "pdca": {
     "kimchi-agent-phase3": {
@@ -2019,6 +2058,132 @@
     {
       "timestamp": "2026-02-28T05:21:28.377Z",
       "feature": "[locale]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:38:53.975Z",
+      "feature": "Kimchi-AI-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:38:56.857Z",
+      "feature": "Kimchi-AI-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:39:25.234Z",
+      "feature": "mascot",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:39:36.317Z",
+      "feature": "Kimchi-AI-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:39:50.002Z",
+      "feature": "Kimchi-AI-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:39:53.185Z",
+      "feature": "Kimchi-AI-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:40:28.530Z",
+      "feature": "mascot",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:40:34.776Z",
+      "feature": "mascot",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:40:48.793Z",
+      "feature": "mascot",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:40:53.000Z",
+      "feature": "mascot",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:41:01.759Z",
+      "feature": "Kimchi-AI-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:41:08.672Z",
+      "feature": "Kimchi-AI-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:41:15.184Z",
+      "feature": "Kimchi-AI-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:41:20.778Z",
+      "feature": "Kimchi-AI-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:41:27.369Z",
+      "feature": "Kimchi-AI-Agent",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:41:35.680Z",
+      "feature": "documents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:41:44.707Z",
+      "feature": "documents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:41:51.820Z",
+      "feature": "[locale]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:41:59.897Z",
+      "feature": "[locale]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T05:52:02.866Z",
+      "feature": "kimchi-mascot — Gap 분석",
+      "phase": "act",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T06:07:58.079Z",
+      "feature": "Kimchi-AI-Agent",
       "phase": "do",
       "action": "updated"
     }
