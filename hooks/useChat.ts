@@ -164,5 +164,14 @@ export function useChat(conversationId?: string) {
     setChatStatus('idle');
   }, []);
 
-  return { messages, isStreaming, chatStatus, error, sendMessage, clearMessages };
+  const loadMessages = useCallback((msgs: Message[]) => {
+    abortRef.current?.abort();
+    if (doneTimerRef.current) clearTimeout(doneTimerRef.current);
+    setMessages(msgs);
+    setError(null);
+    setIsStreaming(false);
+    setChatStatus('idle');
+  }, []);
+
+  return { messages, isStreaming, chatStatus, error, sendMessage, clearMessages, loadMessages };
 }

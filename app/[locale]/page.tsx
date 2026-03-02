@@ -36,7 +36,7 @@ export default function HomePage() {
     refresh: refreshConversations,
   } = useConversations();
 
-  const { messages, isStreaming, chatStatus, sendMessage, clearMessages } = useChat(
+  const { messages, isStreaming, chatStatus, sendMessage, clearMessages, loadMessages } = useChat(
     activeId ?? undefined
   );
   const { criticalCount, warningCount } = useAlerts();
@@ -59,11 +59,24 @@ export default function HomePage() {
     setBottomTab('chat');
   };
 
-  const handleSelectConversation = (id: string) => {
+  const handleSelectConversation = async (id: string) => {
     setActiveId(id);
     clearMessages();
     setSidebarOpen(false);
     setBottomTab('chat');
+
+    try {
+      const res = await fetch(`/api/conversations/${id}`);
+      if (res.ok) {
+        const json = await res.json();
+        const data = json.data ?? json;
+        if (Array.isArray(data.messages) && data.messages.length > 0) {
+          loadMessages(data.messages);
+        }
+      }
+    } catch {
+      // 로드 실패 시 빈 대화로 유지
+    }
   };
 
   const handleDeleteConversation = (id: string) => {
