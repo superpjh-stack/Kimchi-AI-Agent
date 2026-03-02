@@ -167,5 +167,19 @@
       "documents": "Document Search",
       "production": "Production Operations"
     }
+  },
+  "auth": {
+    "appTitle": "Kimchi Factory AI Assistant",
+    "loginTitle": "Login",
+    "loginDescription": "Sign in to Kimchi Factory AI Assistant",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "login": "Login",
+    "loggingIn": "Logging in...",
+    "loginFailed": "Invalid email or password",
+    "logout": "Logout",
+    "userName": "User"
   }
 }

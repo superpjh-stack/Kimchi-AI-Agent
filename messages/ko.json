@@ -167,5 +167,19 @@
       "documents": "문서 검색",
       "production": "생산 운영"
     }
+  },
+  "auth": {
+    "appTitle": "김치공장 AI 도우미",
+    "loginTitle": "로그인",
+    "loginDescription": "김치공장 AI 도우미에 로그인하세요",
+    "email": "이메일",
+    "emailPlaceholder": "이메일을 입력하세요",
+    "password": "비밀번호",
+    "passwordPlaceholder": "비밀번호를 입력하세요",
+    "login": "로그인",
+    "loggingIn": "로그인 중...",
+    "loginFailed": "이메일 또는 비밀번호가 올바르지 않습니다",
+    "logout": "로그아웃",
+    "userName": "사용자"
   }
 }
