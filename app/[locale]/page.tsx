@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
+import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
 import type { TabId } from '@/components/layout/BottomNav';
 import ChatWindow from '@/components/chat/ChatWindow';
@@ -24,9 +26,27 @@ const DashboardPanel = dynamic(() => import('@/components/dashboard/DashboardPan
 });
 
 export default function HomePage() {
+  const { isLoading: authLoading, isAuthenticated } = useAuth();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [bottomTab, setBottomTab] = useState<TabId>('dashboard');
   const [questionPanelOpen, setQuestionPanelOpen] = useState(false);
+
+  // 비로그인 시 /login 으로 리다이렉트
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [authLoading, isAuthenticated, router]);
+
+  // 로딩 중이거나 비인증 상태면 로딩 스피너 표시
+  if (authLoading || !isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-kimchi-cream">
+        <div className="animate-spin h-8 w-8 border-4 border-kimchi-red border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   const {
     conversations,
