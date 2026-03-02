@@ -45,6 +45,7 @@ export interface Conversation {
   messageCount: number;
   createdAt: string;
   updatedAt: string;
+  tenantId?: string;
 }
 
 export interface DocumentSource {

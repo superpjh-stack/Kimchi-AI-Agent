@@ -31,7 +31,7 @@ export function createConversationEntry(firstUserMessage: string, tenantId = 'de
 export function listConversations(tenantId = 'default'): Conversation[] {
   const all = Array.from(conversationStore.values()).map((e) => e.conversation);
   if (!isMultiTenantEnabled()) return all;
-  return all.filter((c) => (c as Conversation & { tenantId?: string }).tenantId === tenantId);
+  return all.filter((c) => c.tenantId === tenantId);
 }
 
 /** 대화 추가 + 파일 저장 */
