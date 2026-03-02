@@ -23,7 +23,10 @@ import type { Message } from '@/types';
 const log = createLogger('services.chat');
 
 const USE_OLLAMA = !!process.env.OLLAMA_BASE_URL;
-const USE_OPENAI = !USE_OLLAMA && !!process.env.OPENAI_CHAT_MODEL;
+// OPENAI_API_KEY 또는 OPENAI_CHAT_MODEL 중 하나라도 있으면 OpenAI 사용
+const USE_OPENAI = !USE_OLLAMA && (!!process.env.OPENAI_API_KEY || !!process.env.OPENAI_CHAT_MODEL);
+// ANTHROPIC_API_KEY 없으면 Claude 사용 안 함
+const USE_CLAUDE = !USE_OLLAMA && !USE_OPENAI && !!process.env.ANTHROPIC_API_KEY;
 
 export interface ChatServiceParams {
   message: string;
@@ -118,7 +121,7 @@ export async function streamChat(params: ChatServiceParams): Promise<Response> {
   } else if (USE_OPENAI) {
     log.info({ model: OPENAI_CHAT_MODEL }, 'Using OpenAI');
     sseStream = createOpenAISSEStream(chatMessages, ragResult.sources, onComplete, conversationId);
-  } else {
+  } else if (USE_CLAUDE) {
     log.info({ model: MODEL }, 'Using Claude');
     const stream = anthropic.messages.stream({
       model: MODEL,
@@ -127,6 +130,16 @@ export async function streamChat(params: ChatServiceParams): Promise<Response> {
       messages: anthropicMessages,
     });
     sseStream = createSSEStream(stream, ragResult.sources, onComplete, conversationId);
+  } else {
+    // API 키 미설정 — 사용자에게 명확한 에러 반환
+    log.error('No LLM provider configured. Set ANTHROPIC_API_KEY or OPENAI_API_KEY.');
+    const encoder = new TextEncoder();
+    sseStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode('data: {"type":"error","message":"AI 서비스 설정이 필요합니다. 관리자에게 문의하세요."}\n\n'));
+        controller.close();
+      },
+    });
   }
 
   return new Response(sseStream, { headers: SSE_HEADERS });
