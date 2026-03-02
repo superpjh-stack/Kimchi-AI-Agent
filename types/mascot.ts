@@ -14,7 +14,8 @@ export type MascotContext =
   | 'upload'  // 문서 업로드
   | 'system'  // 시스템 이벤트
   | 'time'    // 시간 기반 이벤트
-  | 'alert';  // 공정 알림 연동
+  | 'alert'   // 공정 알림 연동
+  | 'auth';   // 인증 관련 (로그인/로그아웃)
 
 /** 계절 */
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
