@@ -22,11 +22,13 @@ import type { Message } from '@/types';
 
 const log = createLogger('services.chat');
 
-const USE_OLLAMA = !!process.env.OLLAMA_BASE_URL;
-// OPENAI_API_KEY 또는 OPENAI_CHAT_MODEL 중 하나라도 있으면 OpenAI 사용
-const USE_OPENAI = !USE_OLLAMA && (!!process.env.OPENAI_API_KEY || !!process.env.OPENAI_CHAT_MODEL);
-// ANTHROPIC_API_KEY 없으면 Claude 사용 안 함
-const USE_CLAUDE = !USE_OLLAMA && !USE_OPENAI && !!process.env.ANTHROPIC_API_KEY;
+// ※ 런타임마다 재평가 — 모듈 레벨 상수로 두면 빌드타임에 false로 고정될 수 있음
+function getProvider() {
+  const useOllama = !!process.env.OLLAMA_BASE_URL;
+  const useOpenAI = !useOllama && (!!process.env.OPENAI_API_KEY || !!process.env.OPENAI_CHAT_MODEL);
+  const useClaude = !useOllama && !useOpenAI && !!process.env.ANTHROPIC_API_KEY;
+  return { useOllama, useOpenAI, useClaude };
+}
 
 export interface ChatServiceParams {
   message: string;
@@ -112,16 +114,19 @@ export async function streamChat(params: ChatServiceParams): Promise<Response> {
     }
   };
 
-  // 5. LLM 프로바이더 선택 후 스트림 반환
+  // 5. LLM 프로바이더 선택 후 스트림 반환 (런타임마다 env 재확인)
+  const { useOllama, useOpenAI, useClaude } = getProvider();
+  log.info({ useOllama, useOpenAI, useClaude }, 'Provider selected');
+
   let sseStream: ReadableStream<Uint8Array>;
 
-  if (USE_OLLAMA) {
+  if (useOllama) {
     log.info({ model: OLLAMA_MODEL }, 'Using Ollama');
     sseStream = createOllamaSSEStream(chatMessages, ragResult.sources, onComplete, conversationId);
-  } else if (USE_OPENAI) {
+  } else if (useOpenAI) {
     log.info({ model: OPENAI_CHAT_MODEL }, 'Using OpenAI');
     sseStream = createOpenAISSEStream(chatMessages, ragResult.sources, onComplete, conversationId);
-  } else if (USE_CLAUDE) {
+  } else if (useClaude) {
     log.info({ model: MODEL }, 'Using Claude');
     const stream = anthropic.messages.stream({
       model: MODEL,
@@ -131,7 +136,6 @@ export async function streamChat(params: ChatServiceParams): Promise<Response> {
     });
     sseStream = createSSEStream(stream, ragResult.sources, onComplete, conversationId);
   } else {
-    // API 키 미설정 — 사용자에게 명확한 에러 반환
     log.error('No LLM provider configured. Set ANTHROPIC_API_KEY or OPENAI_API_KEY.');
     const encoder = new TextEncoder();
     sseStream = new ReadableStream({
