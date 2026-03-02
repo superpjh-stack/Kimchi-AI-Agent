@@ -21,13 +21,18 @@
     "conversations": "대화 목록",
     "today": "오늘",
     "yesterday": "어제",
+    "thisWeek": "이번 주",
     "older": "이전",
     "searchPlaceholder": "대화 검색...",
     "noConversations": "대화가 없습니다",
     "deleteConversation": "대화 삭제",
     "deleteConfirm": "이 대화를 삭제하시겠습니까?",
     "documentManagement": "문서 관리",
-    "settings": "설정"
+    "settings": "설정",
+    "subtitle": "김치 제조 전문 도우미",
+    "emptyState": "김치에 대해 무엇이든 물어보세요!",
+    "noSearchResults": "검색 결과 없음",
+    "tryDifferentSearch": "다른 검색어를 입력해보세요"
   },
   "chat": {
     "welcome": {
@@ -41,8 +46,16 @@
     "emptyState": "김치공장 AI 도우미입니다. 무엇을 도와드릴까요?",
     "errorMessage": "답변 생성 중 오류가 발생했습니다. 다시 시도해주세요.",
     "sources": "참고 문서",
+    "sourcesCount": "출처 {count}개",
     "showMore": "더 보기",
     "showLess": "접기",
+    "streaming": "AI가 응답 중입니다...",
+    "streamingHint": "AI가 응답을 생성하고 있습니다...",
+    "aiResponding": "AI 응답 중",
+    "send": "전송",
+    "sendHint": "전송 (Enter)",
+    "inputHint": "Enter로 전송 · Shift+Enter로 줄바꿈",
+    "messageInput": "메시지 입력",
     "voice": {
       "playSpeech": "읽어주기",
       "stopSpeaking": "읽기 중지",
@@ -105,6 +118,26 @@
     "info": "정보",
     "noAlerts": "활성 알림이 없습니다",
     "acknowledge": "확인"
+  },
+  "nav": {
+    "dashboard": "대시보드",
+    "chat": "채팅",
+    "conversations": "대화목록",
+    "documents": "문서",
+    "questions": "질문"
+  },
+  "aiStatus": {
+    "ragSearch": "RAG 검색",
+    "llmGenerate": "LLM 생성",
+    "done": "완료",
+    "error": "오류",
+    "searchingDocs": "문서\n검색 중",
+    "generatingAi": "AI\n답변 중",
+    "generationDone": "생성\n완료",
+    "voiceRecording": "음성 녹음 중",
+    "voiceProcessing": "음성 처리 중",
+    "stopRecording": "녹음 중지",
+    "voiceInput": "음성 입력"
   },
   "accessibility": {
     "skipToContent": "본문으로 건너뛰기",

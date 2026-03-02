@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Mic, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
+import { useTranslations } from 'next-intl';
 
 interface VoiceInputProps {
   onTranscript: (text: string) => void;
@@ -23,6 +24,7 @@ export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) 
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [isSupported, setIsSupported] = useState(false);
   const recognitionRef = useRef<any>(null); // Web Speech API — no TS types
+  const t = useTranslations('aiStatus');
   // Fix Bug #2: keep latest onTranscript without re-creating the recognition instance
   const onTranscriptRef = useRef(onTranscript);
   useEffect(() => { onTranscriptRef.current = onTranscript; }, [onTranscript]);
@@ -87,7 +89,7 @@ export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) 
         type="button"
         onClick={handleClick}
         disabled={disabled || voiceState === 'processing'}
-        title={voiceState === 'listening' ? '녹음 중지' : '음성 입력'}
+        title={voiceState === 'listening' ? t('stopRecording') : t('voiceInput')}
         className={clsx(
           'relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-kimchi-orange',
@@ -115,7 +117,7 @@ export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) 
         aria-atomic="true"
         className="sr-only"
       >
-        {voiceState === 'listening' ? '음성 녹음 중' : voiceState === 'processing' ? '음성 처리 중' : ''}
+        {voiceState === 'listening' ? t('voiceRecording') : voiceState === 'processing' ? t('voiceProcessing') : ''}
       </span>
     </span>
   );

@@ -21,13 +21,18 @@
     "conversations": "Conversations",
     "today": "Today",
     "yesterday": "Yesterday",
+    "thisWeek": "This week",
     "older": "Older",
     "searchPlaceholder": "Search conversations...",
     "noConversations": "No conversations",
     "deleteConversation": "Delete conversation",
     "deleteConfirm": "Delete this conversation?",
     "documentManagement": "Document Manager",
-    "settings": "Settings"
+    "settings": "Settings",
+    "subtitle": "Kimchi manufacturing assistant",
+    "emptyState": "Ask anything about kimchi!",
+    "noSearchResults": "No results found",
+    "tryDifferentSearch": "Try a different search term"
   },
   "chat": {
     "welcome": {
@@ -41,8 +46,16 @@
     "emptyState": "Kimchi Factory AI Assistant. How can I help you?",
     "errorMessage": "An error occurred while generating the response. Please try again.",
     "sources": "Sources",
+    "sourcesCount": "{count} sources",
     "showMore": "Show more",
     "showLess": "Show less",
+    "streaming": "AI is responding...",
+    "streamingHint": "AI is generating a response...",
+    "aiResponding": "AI responding",
+    "send": "Send",
+    "sendHint": "Send (Enter)",
+    "inputHint": "Enter to send · Shift+Enter for newline",
+    "messageInput": "Message input",
     "voice": {
       "playSpeech": "Read aloud",
       "stopSpeaking": "Stop speaking",
@@ -105,6 +118,26 @@
     "info": "Info",
     "noAlerts": "No active alerts",
     "acknowledge": "Acknowledge"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "chat": "Chat",
+    "conversations": "History",
+    "documents": "Docs",
+    "questions": "Questions"
+  },
+  "aiStatus": {
+    "ragSearch": "RAG Search",
+    "llmGenerate": "LLM Generate",
+    "done": "Done",
+    "error": "Error",
+    "searchingDocs": "Searching\ndocs",
+    "generatingAi": "AI\nresponding",
+    "generationDone": "Generation\ncomplete",
+    "voiceRecording": "Recording voice",
+    "voiceProcessing": "Processing voice",
+    "stopRecording": "Stop recording",
+    "voiceInput": "Voice input"
   },
   "accessibility": {
     "skipToContent": "Skip to content",

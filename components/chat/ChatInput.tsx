@@ -105,9 +105,9 @@ export default function ChatInput({
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             disabled={isStreaming}
-            placeholder={isStreaming ? 'AI가 응답 중입니다...' : resolvedPlaceholder}
+            placeholder={isStreaming ? t('streaming') : resolvedPlaceholder}
             rows={1}
-            aria-label="메시지 입력"
+            aria-label={t('messageInput')}
             aria-disabled={isStreaming}
             className={clsx(
               'w-full resize-none rounded-2xl border px-4 py-3 pr-12',
@@ -129,9 +129,9 @@ export default function ChatInput({
           type="button"
           onClick={handleSend}
           disabled={!canSend}
-          aria-label={isStreaming ? 'AI 응답 중' : '전송'}
+          aria-label={isStreaming ? t('aiResponding') : t('send')}
           aria-busy={isStreaming}
-          title="전송 (Enter)"
+          title={t('sendHint')}
           className={clsx(
             'flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200',
             'min-h-[48px] min-w-[48px]',
@@ -156,7 +156,7 @@ export default function ChatInput({
       </div>
 
       <p className="text-center text-xs text-brand-text-muted mt-2">
-        {isStreaming ? 'AI가 응답을 생성하고 있습니다...' : 'Enter로 전송 · Shift+Enter로 줄바꿈'}
+        {isStreaming ? t('streamingHint') : t('inputHint')}
       </p>
     </div>
   );

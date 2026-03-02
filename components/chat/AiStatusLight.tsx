@@ -2,16 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import clsx from 'clsx';
+import { useTranslations } from 'next-intl';
 import type { ChatStatus } from '@/types';
 
 interface AiStatusLightProps {
   status: ChatStatus;
 }
 
-const STAGES = [
-  { key: 'rag-searching', label: 'RAG 검색', emoji: '🥬', color: 'bg-kimchi-orange', glow: 'shadow-kimchi-orange/50' },
-  { key: 'llm-generating', label: 'LLM 생성', emoji: '🌶️', color: 'bg-kimchi-green', glow: 'shadow-kimchi-green/50' },
-  { key: 'done', label: '완료', emoji: '🫙', color: 'bg-kimchi-green-dark', glow: 'shadow-kimchi-green/50' },
+const STAGE_KEYS = [
+  { key: 'rag-searching', labelKey: 'ragSearch', tooltipKey: 'searchingDocs', emoji: '🥬', color: 'bg-kimchi-orange', glow: 'shadow-kimchi-orange/50' },
+  { key: 'llm-generating', labelKey: 'llmGenerate', tooltipKey: 'generatingAi', emoji: '🌶️', color: 'bg-kimchi-green', glow: 'shadow-kimchi-green/50' },
+  { key: 'done', labelKey: 'done', tooltipKey: 'generationDone', emoji: '🫙', color: 'bg-kimchi-green-dark', glow: 'shadow-kimchi-green/50' },
 ] as const;
 
 type StageKey = (typeof STAGES)[number]['key'];
@@ -25,13 +26,14 @@ function getActiveStageIndex(status: ChatStatus): number {
 
 export default function AiStatusLight({ status }: AiStatusLightProps) {
   const [visible, setVisible] = useState(false);
+  const t = useTranslations('aiStatus');
 
   useEffect(() => {
     if (status !== 'idle') {
       setVisible(true);
     } else {
-      const t = setTimeout(() => setVisible(false), 600);
-      return () => clearTimeout(t);
+      const timer = setTimeout(() => setVisible(false), 600);
+      return () => clearTimeout(timer);
     }
   }, [status]);
 
@@ -53,7 +55,7 @@ export default function AiStatusLight({ status }: AiStatusLightProps) {
         <span className="text-[9px] text-kimchi-beige/60 font-medium tracking-wide mb-1">AI</span>
 
         {/* 3 light dots */}
-        {STAGES.map((stage, idx) => {
+        {STAGE_KEYS.map((stage, idx) => {
           const isActive = !isError && idx === activeIdx;
           const isPast = !isError && idx < activeIdx;
 
@@ -82,7 +84,7 @@ export default function AiStatusLight({ status }: AiStatusLightProps) {
               </div>
 
               {/* Connector line (except last) */}
-              {idx < STAGES.length - 1 && (
+              {idx < STAGE_KEYS.length - 1 && (
                 <div
                   className={clsx(
                     'w-0.5 h-2 mt-0.5 rounded-full transition-colors duration-300',
@@ -97,10 +99,10 @@ export default function AiStatusLight({ status }: AiStatusLightProps) {
         {/* Status text */}
         <div className="mt-2 text-center">
           {isError ? (
-            <span className="text-[9px] text-kimchi-red font-medium">오류</span>
+            <span className="text-[9px] text-kimchi-red font-medium">{t('error')}</span>
           ) : activeIdx >= 0 ? (
             <span className="text-[9px] text-kimchi-beige/70 font-medium leading-tight block">
-              {STAGES[activeIdx].label}
+              {t(STAGE_KEYS[activeIdx].labelKey)}
             </span>
           ) : null}
         </div>
@@ -109,10 +111,8 @@ export default function AiStatusLight({ status }: AiStatusLightProps) {
       {/* Current stage tooltip */}
       {!isError && activeIdx >= 0 && (
         <div className="mt-2 bg-[#2D1810] rounded-lg px-2 py-1.5 text-center w-16 border border-[#4A3228]">
-          <p className="text-[9px] text-kimchi-beige/60 leading-tight">
-            {activeIdx === 0 && '문서\n검색 중'}
-            {activeIdx === 1 && 'AI\n답변 중'}
-            {activeIdx === 2 && '생성\n완료'}
+          <p className="text-[9px] text-kimchi-beige/60 leading-tight whitespace-pre-line">
+            {t(STAGE_KEYS[activeIdx].tooltipKey)}
           </p>
         </div>
       )}

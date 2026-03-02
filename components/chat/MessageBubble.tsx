@@ -82,12 +82,12 @@ function MessageBubble({ message, isStreaming, onSpeak, onStopSpeaking, speaking
               {expanded ? (
                 <>
                   <ChevronUp size={12} />
-                  접기
+                  {t('showLess')}
                 </>
               ) : (
                 <>
                   <ChevronDown size={12} />
-                  더 보기
+                  {t('showMore')}
                 </>
               )}
             </button>
@@ -102,7 +102,7 @@ function MessageBubble({ message, isStreaming, onSpeak, onStopSpeaking, speaking
               className="flex items-center gap-1 text-xs text-brand-text-muted hover:text-brand-text-secondary transition-colors"
             >
               <FileText size={12} />
-              <span>출처 {message.sources!.length}개</span>
+              <span>{t('sourcesCount', { count: message.sources!.length })}</span>
               {sourcesOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
             </button>
 

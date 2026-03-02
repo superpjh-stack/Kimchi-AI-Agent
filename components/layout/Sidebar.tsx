@@ -87,7 +87,7 @@ export default function Sidebar({
   const groups = groupConversationsByDate(filteredConversations, {
     today: t('today'),
     yesterday: t('yesterday'),
-    thisWeek: '이번 주',
+    thisWeek: t('thisWeek'),
     older: t('older'),
   });
 
@@ -104,7 +104,7 @@ export default function Sidebar({
               <h1 className="font-bold text-brand-text-primary text-base leading-tight">김치공장 AI</h1>
               <AlertBadge criticalCount={criticalAlerts} warningCount={warningAlerts} />
             </div>
-            <p className="text-xs text-brand-text-muted">김치 제조 전문 도우미 🥬</p>
+            <p className="text-xs text-brand-text-muted">{t('subtitle')} 🥬</p>
           </div>
         </div>
         {/* Mobile close button */}
@@ -158,13 +158,13 @@ export default function Sidebar({
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="text-4xl mb-3 animate-float">🥬</div>
             <p className="text-sm text-brand-text-secondary font-medium">{t('noConversations')}</p>
-            <p className="text-xs text-brand-text-muted mt-1">김치에 대해 무엇이든 물어보세요!</p>
+            <p className="text-xs text-brand-text-muted mt-1">{t('emptyState')}</p>
           </div>
         ) : filteredConversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="text-3xl mb-3">🔍</div>
-            <p className="text-sm text-brand-text-secondary font-medium">검색 결과 없음</p>
-            <p className="text-xs text-brand-text-muted mt-1">다른 검색어를 입력해보세요</p>
+            <p className="text-sm text-brand-text-secondary font-medium">{t('noSearchResults')}</p>
+            <p className="text-xs text-brand-text-muted mt-1">{t('tryDifferentSearch')}</p>
           </div>
         ) : (
           <div className="space-y-4">
