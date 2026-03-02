@@ -1,4 +1,6 @@
-// lib/auth/credentials.ts — 환경변수 기반 사용자 인증
+// lib/auth/credentials.ts — 사용자 인증 (파일 우선, 환경변수 폴백)
+import fs from 'fs';
+import path from 'path';
 import type { UserRole } from './jwt';
 
 export interface UserRecord {
@@ -9,6 +11,18 @@ export interface UserRecord {
 }
 
 function loadUsers(): UserRecord[] {
+  // 1순위: .local-db/auth-users.json (dotenv-expand $ 이슈 우회)
+  const filePath = path.join(process.cwd(), '.local-db', 'auth-users.json');
+  if (fs.existsSync(filePath)) {
+    try {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      return JSON.parse(raw) as UserRecord[];
+    } catch {
+      // 파일 읽기 실패 시 env var 폴백
+    }
+  }
+
+  // 2순위: AUTH_USERS 환경변수
   const raw = process.env.AUTH_USERS;
   if (!raw) return [];
   try {

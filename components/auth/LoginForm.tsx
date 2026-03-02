@@ -6,23 +6,23 @@ import { useAuth } from '@/hooks/useAuth';
 import { dispatchMascotEvent } from '@/lib/utils/mascot-event';
 import { useRouter } from 'next/navigation';
 
+const QUICK_LOGIN = { username: 'admin', password: 'admin1234' };
+
 export default function LoginForm() {
   const t = useTranslations('auth');
   const { login } = useAuth();
   const router = useRouter();
 
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function doLogin(u: string, p: string) {
     setError('');
     setIsSubmitting(true);
-
     try {
-      await login(email, password);
+      await login(u, p);
       dispatchMascotEvent('celebrating', 'auth');
       router.push('/');
     } catch (err) {
@@ -31,6 +31,17 @@ export default function LoginForm() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    await doLogin(username, password);
+  }
+
+  async function handleQuickLogin() {
+    setUsername(QUICK_LOGIN.username);
+    setPassword(QUICK_LOGIN.password);
+    await doLogin(QUICK_LOGIN.username, QUICK_LOGIN.password);
   }
 
   return (
@@ -56,17 +67,17 @@ export default function LoginForm() {
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-brand-text-primary mb-1">
-              {t('email')}
+            <label htmlFor="username" className="block text-sm font-medium text-brand-text-primary mb-1">
+              {t('username')}
             </label>
             <input
-              id="email"
-              type="email"
+              id="username"
+              type="text"
               required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={t('emailPlaceholder')}
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder={t('usernamePlaceholder')}
               className="w-full px-3 py-2.5 rounded-lg border border-kimchi-beige-dark bg-kimchi-cream/50 text-brand-text-primary placeholder:text-brand-text-muted focus:outline-none focus:ring-2 focus:ring-kimchi-red/30 focus:border-kimchi-red transition-colors text-sm"
               disabled={isSubmitting}
             />
@@ -101,6 +112,27 @@ export default function LoginForm() {
               </svg>
             )}
             {isSubmitting ? t('loggingIn') : t('login')}
+          </button>
+
+          {/* 퀵 로그인 구분선 */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-kimchi-beige-dark" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-white px-2 text-brand-text-muted">또는</span>
+            </div>
+          </div>
+
+          {/* 퀵 로그인 버튼 */}
+          <button
+            type="button"
+            onClick={handleQuickLogin}
+            disabled={isSubmitting}
+            className="w-full py-2.5 rounded-lg border-2 border-dashed border-kimchi-orange/50 bg-kimchi-orange/5 text-kimchi-orange font-medium text-sm hover:bg-kimchi-orange/10 hover:border-kimchi-orange transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center gap-0.5"
+          >
+            <span>{t('quickLogin')}</span>
+            <span className="text-xs font-normal opacity-70">{t('quickLoginHint')}</span>
           </button>
         </form>
       </div>
