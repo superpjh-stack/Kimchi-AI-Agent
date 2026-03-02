@@ -15,7 +15,7 @@ const STAGE_KEYS = [
   { key: 'done', labelKey: 'done', tooltipKey: 'generationDone', emoji: '🫙', color: 'bg-kimchi-green-dark', glow: 'shadow-kimchi-green/50' },
 ] as const;
 
-type StageKey = (typeof STAGES)[number]['key'];
+type StageKey = (typeof STAGE_KEYS)[number]['key'];
 
 function getActiveStageIndex(status: ChatStatus): number {
   if (status === 'rag-searching') return 0;
