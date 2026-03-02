@@ -124,7 +124,7 @@ export default function HomePage() {
         {/* Main area + right panel row */}
         <div className="flex flex-1 overflow-hidden">
           {/* Main area — on mobile, add bottom padding for BottomNav */}
-          <main id="main" className="flex-1 overflow-hidden pb-14 lg:pb-0 min-w-0">
+          <main id="main-content" className="flex-1 overflow-hidden pb-14 lg:pb-0 min-w-0">
             {bottomTab === 'dashboard' ? (
               <DashboardPanel />
             ) : bottomTab === 'documents' ? (
