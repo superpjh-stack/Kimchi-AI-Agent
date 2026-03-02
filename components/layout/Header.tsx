@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Menu, HelpCircle, Wifi, WifiOff } from 'lucide-react';
+import { Menu, HelpCircle, Wifi, WifiOff, LogOut } from 'lucide-react';
 import clsx from 'clsx';
 import { useTranslations } from 'next-intl';
 import type { TabId } from '@/components/layout/BottomNav';
 import LocaleSwitcher from '@/components/layout/LocaleSwitcher';
 import TenantSelector from '@/components/tenant/TenantSelector';
+import { useAuth } from '@/hooks/useAuth';
 
 interface HeaderProps {
   title?: string;
@@ -48,7 +49,9 @@ export default function Header({
 }: HeaderProps) {
   const isOnline = useOnlineStatus();
   const t = useTranslations('header');
+  const tAuth = useTranslations('auth');
   const tAccessibility = useTranslations('accessibility');
+  const { user, isLoading: authLoading, logout } = useAuth();
 
   const DESKTOP_TABS: { id: TabId; label: string }[] = [
     { id: 'dashboard', label: t('dashboard') },
@@ -131,6 +134,24 @@ export default function Header({
 
       {/* Locale Switcher */}
       <LocaleSwitcher />
+
+      {/* User info + Logout */}
+      {!authLoading && user && (
+        <div className="hidden sm:flex items-center gap-2">
+          <span className="text-xs text-brand-text-secondary truncate max-w-[120px]">
+            {user.name ?? user.email}
+          </span>
+          <button
+            type="button"
+            onClick={logout}
+            className="flex items-center justify-center min-h-[36px] min-w-[36px] rounded-lg hover:bg-kimchi-cream text-brand-text-secondary hover:text-kimchi-red transition-colors"
+            aria-label={tAuth('logout')}
+            title={tAuth('logout')}
+          >
+            <LogOut size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Logo badge */}
       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-kimchi-red/10 rounded-full border border-kimchi-red/20">
