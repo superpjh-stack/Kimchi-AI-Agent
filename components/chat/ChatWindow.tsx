@@ -127,8 +127,8 @@ export default function ChatWindow({
 
   return (
     <div className="flex h-full bg-kimchi-cream">
-      {/* AI Status Light */}
-      <div className="flex-shrink-0 flex flex-col items-center pt-6 px-2 w-20">
+      {/* AI Status Light — hidden on mobile to save chat width */}
+      <div className="hidden lg:flex flex-shrink-0 flex-col items-center pt-6 px-2 w-20">
         <AiStatusLight status={chatStatus} />
       </div>
 
