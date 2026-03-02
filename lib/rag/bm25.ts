@@ -5,16 +5,59 @@
 const K1 = 1.5;  // 단어 빈도 포화 파라미터
 const B  = 0.75; // 문서 길이 정규화 파라미터
 
+// 한국어 불용어
+const KO_STOPWORDS = new Set([
+  '이', '그', '저', '것', '수', '등', '들',
+  '및', '에', '의', '로', '를', '은', '는',
+  '이다', '있다', '하다', '되다', '않다',
+  '그리고', '하지만', '그러나', '또한', '또는',
+  '때문', '위해', '대해', '통해', '따라',
+  '매우', '정말', '아주', '너무', '가장',
+]);
+
+// 한국어 조사/어미 제거 패턴
+const KO_SUFFIX_PATTERN =
+  /(?:에서|으로|부터|까지|에게|처럼|만큼|이라|이나|에는|에도|에서는|으로는|이고|이며|이라서|에서도|은|는|이|가|을|를|의|에|로|와|과|도|만|서|고|며|나)$/;
+
 /**
  * 텍스트를 토큰 배열로 변환.
- * 한글 2자 이상 + 영문 2자 이상 + 숫자 포함
+ * 한글: 불용어 제거 + 조사 분리 + bigram
+ * 영문: 2자 이상 토큰
  */
 function tokenize(text: string): string[] {
-  return text
+  const normalized = text
     .toLowerCase()
-    .replace(/[^\w\s가-힣]/g, ' ')
-    .split(/\s+/)
-    .filter((t) => t.length >= 2);
+    .replace(/[^\w\s가-힣]/g, ' ');
+
+  const rawTokens = normalized.split(/\s+/).filter(Boolean);
+  const result: string[] = [];
+
+  for (const token of rawTokens) {
+    const hasKorean = /[가-힣]/.test(token);
+
+    if (hasKorean) {
+      // 원본 토큰
+      if (token.length >= 2 && !KO_STOPWORDS.has(token)) {
+        result.push(token);
+      }
+      // 조사 제거 버전
+      const stemmed = token.replace(KO_SUFFIX_PATTERN, '');
+      if (stemmed.length >= 2 && stemmed !== token && !KO_STOPWORDS.has(stemmed)) {
+        result.push(stemmed);
+      }
+      // 한국어 bigram (3자 이상)
+      const koreanChars = token.replace(/[^가-힣]/g, '');
+      if (koreanChars.length >= 3) {
+        for (let i = 0; i <= koreanChars.length - 2; i++) {
+          result.push(koreanChars.slice(i, i + 2));
+        }
+      }
+    } else {
+      if (token.length >= 2) result.push(token);
+    }
+  }
+
+  return result;
 }
 
 export interface BM25Result {
