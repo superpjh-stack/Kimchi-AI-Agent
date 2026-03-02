@@ -1,8 +1,7 @@
 // POST /api/chat — 요청 검증 + Rate Limit + Tenant Context + ChatService 위임
 import { SSE_HEADERS } from '@/lib/ai/streaming';
 import { chatLimiter } from '@/lib/middleware/rate-limit';
-// TODO(Sprint2): 로그인 UI 완성 후 withAuth 재활성화
-// import { withAuth, type AuthRequest } from '@/lib/auth/auth-middleware';
+import { withAuth } from '@/lib/auth/auth-middleware';
 import { sanitizeChatInput } from '@/lib/security/input-sanitizer';
 import { streamChat } from '@/lib/services/chat.service';
 import { extractTenantId } from '@/lib/tenant/tenant-middleware';
@@ -83,6 +82,4 @@ async function chatHandler(req: Request): Promise<Response> {
   }
 }
 
-// TODO(Sprint2): 로그인 UI 완성 후 withAuth 재활성화
-// export const POST = withAuth(chatHandler, { permissions: ['chat:write'] });
-export const POST = chatHandler;
+export const POST = withAuth(chatHandler, { permissions: ['chat:write'] });
