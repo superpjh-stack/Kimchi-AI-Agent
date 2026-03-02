@@ -4,8 +4,8 @@ import { chunkText } from './chunker';
 import { embed, embedBatch } from './embedder';
 import { toDocumentSource, getVectorStore, getVectorStoreForTenant, InMemoryVectorStore, restoreVectorFromFile } from './retriever';
 import { isMultiTenantEnabled } from '@/lib/tenant/tenant-middleware';
-import { bm25Index, restoreBM25FromFile } from './bm25';
-import { saveBM25Index, saveVectorIndex } from '@/lib/db/file-store';
+import { bm25Index, restoreBM25FromFile, getBM25IndexForTenant, restoreBM25ForTenant } from './bm25';
+import { saveBM25Index, saveBM25IndexForTenant, saveVectorIndex } from '@/lib/db/file-store';
 import { createLogger } from '@/lib/logger';
 import type { DocumentSource, ChunkingOptions } from '@/types';
 
@@ -73,7 +73,10 @@ export async function retrieveContext(query: string, tenantId?: string): Promise
   const vectorResults = await store.search(queryVector, { topK: 10, threshold: 0.3 });
 
   // 2. BM25 키워드 검색 (어휘)
-  const bm25Results = bm25Index.search(query, 10);
+  const bm25 = isMultiTenantEnabled() && tenantId
+    ? getBM25IndexForTenant(tenantId)
+    : bm25Index;
+  const bm25Results = bm25.search(query, 10);
 
   // 3. RRF 융합
   const vectorKeys = vectorResults.map(
@@ -148,13 +151,20 @@ export async function ingestDocument(
   await store.addDocuments(chunks, vectors);
 
   // BM25 인덱싱
+  const bm25 = isMultiTenantEnabled() && tenantId
+    ? getBM25IndexForTenant(tenantId)
+    : bm25Index;
   for (const chunk of chunks) {
     const key = `${chunk.metadata.docId}::${chunk.index}`;
-    bm25Index.add(key, chunk.text);
+    bm25.add(key, chunk.text);
   }
 
   // SC2: BM25 인덱스 파일 영구화 (비동기)
-  saveBM25Index(bm25Index.serialize());
+  if (isMultiTenantEnabled() && tenantId) {
+    saveBM25IndexForTenant(tenantId, bm25.serialize());
+  } else {
+    saveBM25Index(bm25Index.serialize());
+  }
 
   // 벡터 인덱스 파일 영구화 (비동기, 인메모리 백엔드만)
   if (store instanceof InMemoryVectorStore) {
@@ -176,5 +186,15 @@ export async function removeDocumentFull(docId: string, tenantId?: string): Prom
     ? getVectorStoreForTenant(tenantId)
     : await getVectorStore();
   await store.removeDocument(docId);
-  bm25Index.remove(docId);
+  const bm25 = isMultiTenantEnabled() && tenantId
+    ? getBM25IndexForTenant(tenantId)
+    : bm25Index;
+  bm25.remove(docId);
+
+  // BM25 인덱스 파일 영구화 (비동기)
+  if (isMultiTenantEnabled() && tenantId) {
+    saveBM25IndexForTenant(tenantId, bm25.serialize());
+  } else {
+    saveBM25Index(bm25Index.serialize());
+  }
 }
