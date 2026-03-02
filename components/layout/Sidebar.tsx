@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import clsx from 'clsx';
-import { Plus, FileText, Settings, X, Search, Trash2 } from 'lucide-react';
+import { Plus, X, Search, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Conversation } from '@/types';
 import AlertBadge from '@/components/process/AlertBadge';
@@ -228,23 +227,7 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* Footer Links */}
-      <div className="border-t border-kimchi-beige px-2 py-3 space-y-0.5 bg-kimchi-cream/50">
-        <Link
-          href="/documents"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-brand-text-secondary hover:bg-kimchi-beige hover:text-brand-text-primary transition-colors text-sm"
-        >
-          <FileText size={16} />
-          {t('documentManagement')}
-        </Link>
-        <Link
-          href="/settings"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-brand-text-secondary hover:bg-kimchi-beige hover:text-brand-text-primary transition-colors text-sm"
-        >
-          <Settings size={16} />
-          {t('settings')}
-        </Link>
-      </div>
+      {/* Footer — reserved for future feature links */}
     </div>
   );
 
