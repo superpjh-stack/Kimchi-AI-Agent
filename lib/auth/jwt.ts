@@ -11,9 +11,10 @@ export interface JWTPayload {
   exp?: number;
 }
 
+const DEFAULT_SECRET = 'kimchi-dev-secret-change-in-production-minimum-32-chars';
+
 const getSecret = () => {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) throw new Error('JWT_SECRET environment variable is not set');
+  const secret = process.env.JWT_SECRET ?? DEFAULT_SECRET;
   return new TextEncoder().encode(secret);
 };
 
