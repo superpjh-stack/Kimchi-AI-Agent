@@ -207,6 +207,40 @@ export class InMemoryVectorStore implements VectorStore {
   getDocumentStats(): DocumentStats {
     return getDocumentStats();
   }
+
+  /** 벡터 스토어 직렬화 — 파일 영구화용 */
+  serialize(): { entries: [string, { vector: number[]; chunk: Chunk }][] } {
+    return { entries: [...vectorStore.entries()].map(([k, v]) => [k, { vector: Array.from(v.vector), chunk: v.chunk }]) };
+  }
+
+  /** 직렬화된 스냅샷에서 벡터 스토어 복원 */
+  deserialize(data: { entries: [string, { vector: number[]; chunk: Chunk }][] }): void {
+    vectorStore.clear();
+    for (const [key, entry] of data.entries) {
+      vectorStore.set(key, { vector: entry.vector, chunk: entry.chunk });
+    }
+  }
+}
+
+let _vectorRestored = false;
+
+/** 서버 시작 시 1회 호출 — 파일에서 이전 벡터 인덱스 복원 */
+export function restoreVectorFromFile(): void {
+  if (_vectorRestored) return;
+  _vectorRestored = true;
+  try {
+    const { loadVectorIndex } = require('@/lib/db/file-store') as typeof import('@/lib/db/file-store'); // dynamic require — intentional
+    const snapshot = loadVectorIndex();
+    if (snapshot) {
+      vectorStore.clear();
+      for (const [key, entry] of snapshot.entries) {
+        vectorStore.set(key, { vector: entry.vector, chunk: entry.chunk });
+      }
+      log.info({ chunks: vectorStore.size }, 'VectorStore: 파일에서 복원 완료');
+    }
+  } catch {
+    // 파일 없거나 파싱 실패 시 빈 스토어로 유지
+  }
 }
 
 // ──────────────────────────────────────────────

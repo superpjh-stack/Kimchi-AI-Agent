@@ -2,15 +2,16 @@
 
 import { chunkText } from './chunker';
 import { embed, embedBatch } from './embedder';
-import { toDocumentSource, getVectorStore, getVectorStoreForTenant } from './retriever';
+import { toDocumentSource, getVectorStore, getVectorStoreForTenant, InMemoryVectorStore, restoreVectorFromFile } from './retriever';
 import { isMultiTenantEnabled } from '@/lib/tenant/tenant-middleware';
 import { bm25Index, restoreBM25FromFile } from './bm25';
-import { saveBM25Index } from '@/lib/db/file-store';
+import { saveBM25Index, saveVectorIndex } from '@/lib/db/file-store';
 import { createLogger } from '@/lib/logger';
 import type { DocumentSource, ChunkingOptions } from '@/types';
 
-// SC2: 서버 시작 시 파일에서 BM25 인덱스 복원
+// SC2: 서버 시작 시 파일에서 BM25 + 벡터 인덱스 복원
 restoreBM25FromFile();
+restoreVectorFromFile();
 
 const log = createLogger('rag.pipeline');
 
@@ -154,6 +155,11 @@ export async function ingestDocument(
 
   // SC2: BM25 인덱스 파일 영구화 (비동기)
   saveBM25Index(bm25Index.serialize());
+
+  // 벡터 인덱스 파일 영구화 (비동기, 인메모리 백엔드만)
+  if (store instanceof InMemoryVectorStore) {
+    saveVectorIndex(store.serialize());
+  }
 
   return chunks.length;
 }

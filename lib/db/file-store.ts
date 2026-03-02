@@ -61,6 +61,30 @@ export function saveConversations(store: Map<string, ConversationEntry>): void {
   }
 }
 
+// ─── Vector Index ──────────────────────────────────
+
+const VECTOR_FILE = join(DB_DIR, 'vectors.json');
+
+export type VectorSnapshot = { entries: [string, { vector: number[]; chunk: { text: string; index: number; metadata: { docId: string; docName: string } } }][] };
+
+export function loadVectorIndex(): VectorSnapshot | null {
+  try {
+    if (existsSync(VECTOR_FILE)) {
+      const raw = readFileSync(VECTOR_FILE, 'utf-8');
+      return JSON.parse(raw) as VectorSnapshot;
+    }
+  } catch {
+    log.warn('vectors.json 로드 실패 — 빈 벡터 스토어로 초기화');
+  }
+  return null;
+}
+
+export function saveVectorIndex(snapshot: VectorSnapshot): void {
+  writeFile(VECTOR_FILE, JSON.stringify(snapshot), 'utf-8').catch((e) =>
+    log.error({ err: e }, '벡터 인덱스 저장 실패')
+  );
+}
+
 // ─── BM25 Index ────────────────────────────────────
 
 export function loadBM25Index(): BM25Snapshot | null {
