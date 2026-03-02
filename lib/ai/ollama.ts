@@ -19,7 +19,9 @@ interface OllamaChunk {
 
 export function createOllamaSSEStream(
   messages: OllamaMessage[],
-  sources?: DocumentSource[]
+  sources?: DocumentSource[],
+  onComplete?: (fullText: string) => Promise<void>,
+  conversationId?: string
 ): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
 
@@ -29,6 +31,7 @@ export function createOllamaSSEStream(
 
   return new ReadableStream<Uint8Array>({
     async start(controller) {
+      let fullText = '';
       try {
         const res = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
           method: 'POST',
@@ -64,6 +67,7 @@ export function createOllamaSSEStream(
             const token = chunk.message?.content ?? '';
 
             if (token) {
+              fullText += token;
               controller.enqueue(sse({ type: 'token', content: token }));
             }
 
@@ -78,8 +82,11 @@ export function createOllamaSSEStream(
                 );
               }
               controller.enqueue(
-                sse({ type: 'done', messageId: `msg_${Date.now()}`, conversationId: '' })
+                sse({ type: 'done', messageId: `msg_${Date.now()}`, conversationId: conversationId ?? '' })
               );
+              if (onComplete) {
+                await onComplete(fullText);
+              }
             }
           }
         }

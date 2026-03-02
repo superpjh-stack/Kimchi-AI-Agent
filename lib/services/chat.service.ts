@@ -114,7 +114,7 @@ export async function streamChat(params: ChatServiceParams): Promise<Response> {
 
   if (USE_OLLAMA) {
     log.info({ model: OLLAMA_MODEL }, 'Using Ollama');
-    sseStream = createOllamaSSEStream(chatMessages, ragResult.sources);
+    sseStream = createOllamaSSEStream(chatMessages, ragResult.sources, onComplete, conversationId);
   } else if (USE_OPENAI) {
     log.info({ model: OPENAI_CHAT_MODEL }, 'Using OpenAI');
     sseStream = createOpenAISSEStream(chatMessages, ragResult.sources, onComplete, conversationId);
