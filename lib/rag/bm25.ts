@@ -131,9 +131,8 @@ export function restoreBM25FromFile(): void {
   if (_bm25Restored) return;
   _bm25Restored = true;
   try {
-    // 동적 require로 순환 참조 방지
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { loadBM25Index } = require('@/lib/db/file-store') as typeof import('@/lib/db/file-store');
+    // 동적 require로 순환 참조 방지 (import()는 top-level에서만 동작)
+    const { loadBM25Index } = require('@/lib/db/file-store') as typeof import('@/lib/db/file-store'); // dynamic require — intentional
     const snapshot = loadBM25Index();
     if (snapshot) {
       bm25Index.deserialize(snapshot);

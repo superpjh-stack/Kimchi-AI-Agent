@@ -14,18 +14,15 @@ type VoiceState = 'idle' | 'listening' | 'processing';
 // Extend Window type for Web Speech API (not yet in TS lib definitions)
 declare global {
   interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    SpeechRecognition: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    webkitSpeechRecognition: any;
+    SpeechRecognition: any; // Web Speech API — no TS types available
+    webkitSpeechRecognition: any; // webkit prefix variant
   }
 }
 
 export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) {
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [isSupported, setIsSupported] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<any>(null); // Web Speech API — no TS types
   // Fix Bug #2: keep latest onTranscript without re-creating the recognition instance
   const onTranscriptRef = useRef(onTranscript);
   useEffect(() => { onTranscriptRef.current = onTranscript; }, [onTranscript]);
@@ -46,8 +43,7 @@ export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) 
         setVoiceState('listening');
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: any) => { // Web Speech API event — no TS types
         setVoiceState('processing');
         const transcript = event.results[0][0].transcript;
         // Fix Bug #2: use ref to always call the latest onTranscript

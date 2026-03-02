@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-02-28T14:38:21.496Z",
+  "lastUpdated": "2026-02-28T14:44:07.403Z",
   "archived": {
     "kimchi-mascot": {
       "phase": "archived",
@@ -121,9 +121,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-27T13:18:23.689Z",
-        "lastUpdated": "2026-02-28T14:02:49.960Z"
+        "lastUpdated": "2026-02-28T14:44:07.402Z"
       },
-      "lastFile": "C:/AI Make/12 Kimchi-AI-Agent/Kimchi-AI-Agent/__tests__/lib/rag/pipeline.test.ts"
+      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\lib\\rag\\bm25.ts"
     },
     "stats": {
       "phase": "do",
@@ -212,9 +212,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-27T14:39:09.257Z",
-        "lastUpdated": "2026-02-28T14:35:31.595Z"
+        "lastUpdated": "2026-02-28T14:43:59.571Z"
       },
-      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\app\\api\\chat\\route.ts"
+      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\components\\chat\\VoiceInput.tsx"
     },
     "db": {
       "phase": "do",
@@ -415,9 +415,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-02-28T00:15:36.674Z",
-        "lastUpdated": "2026-02-28T09:55:51.169Z"
+        "lastUpdated": "2026-02-28T14:44:04.512Z"
       },
-      "lastFile": "C:/AI Make/12 Kimchi-AI-Agent/Kimchi-AI-Agent/app/api/documents/upload/route.ts"
+      "lastFile": "C:\\AI Make\\12 Kimchi-AI-Agent\\Kimchi-AI-Agent\\app\\api\\documents\\upload\\route.ts"
     },
     "kimchi-agent-phase5": {
       "phase": "act",
@@ -710,7 +710,7 @@
   "session": {
     "startedAt": "2026-02-27T12:14:33.087Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-02-28T14:38:21.496Z"
+    "lastActivity": "2026-02-28T14:44:07.403Z"
   },
   "pdca": {
     "kimchi-agent-phase3": {
@@ -3750,6 +3750,36 @@
     {
       "timestamp": "2026-02-28T14:38:21.496Z",
       "feature": "ai",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T14:43:56.042Z",
+      "feature": "chat",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T14:43:57.630Z",
+      "feature": "chat",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T14:43:59.571Z",
+      "feature": "chat",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T14:44:04.512Z",
+      "feature": "upload",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-28T14:44:07.403Z",
+      "feature": "rag",
       "phase": "do",
       "action": "updated"
     }

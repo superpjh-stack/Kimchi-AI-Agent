@@ -54,8 +54,7 @@ async function extractText(file: File): Promise<string> {
     // S1: exceljs로 교체 (xlsx 패키지의 Prototype Pollution CVE 해결)
     const ExcelJS = (await import('exceljs')).default;
     const workbook = new ExcelJS.Workbook();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const buffer = Buffer.from(await file.arrayBuffer()) as any;
+    const buffer = Buffer.from(await file.arrayBuffer()) as any; // exceljs load() accepts Buffer — cast needed
     await workbook.xlsx.load(buffer);
     const lines: string[] = [];
     workbook.eachSheet((sheet) => {
