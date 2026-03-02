@@ -91,7 +91,7 @@ export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) 
         disabled={disabled || voiceState === 'processing'}
         title={voiceState === 'listening' ? t('stopRecording') : t('voiceInput')}
         className={clsx(
-          'relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200',
+          'relative flex items-center justify-center w-12 h-12 min-h-[48px] rounded-full transition-all duration-200',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-kimchi-orange',
           {
             'bg-kimchi-beige hover:bg-kimchi-beige-dark text-brand-text-secondary': voiceState === 'idle' && !disabled,
