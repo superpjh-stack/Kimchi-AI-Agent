@@ -104,3 +104,23 @@ export function saveBM25Index(snapshot: BM25Snapshot): void {
     log.error({ err: e }, 'BM25 인덱스 저장 실패')
   );
 }
+
+// ─── Tenant별 BM25 Index ─────────────────────────────
+
+// .local-db/tenants/{tenantId}/bm25-index.json
+export function loadBM25IndexForTenant(tenantId: string): unknown | null {
+  const file = join(DB_DIR, 'tenants', tenantId, 'bm25-index.json');
+  try {
+    if (existsSync(file)) {
+      return JSON.parse(readFileSync(file, 'utf-8'));
+    }
+  } catch { /* 빈 인덱스 */ }
+  return null;
+}
+
+export function saveBM25IndexForTenant(tenantId: string, snapshot: unknown): void {
+  const dir = join(DB_DIR, 'tenants', tenantId);
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  writeFile(join(dir, 'bm25-index.json'), JSON.stringify(snapshot), 'utf-8')
+    .catch((e) => console.error(`Tenant ${tenantId} BM25 저장 실패`, e));
+}
