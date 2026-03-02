@@ -184,3 +184,27 @@ export function restoreBM25FromFile(): void {
     // 파일 없거나 파싱 실패 시 빈 인덱스로 유지
   }
 }
+
+// ── Multi-tenant BM25 인덱스 ─────────────────────────────────
+const bm25IndexMap = new Map<string, BM25Index>();
+
+/** tenant별 BM25 인덱스를 반환 (없으면 새로 생성) */
+export function getBM25IndexForTenant(tenantId: string): BM25Index {
+  if (!bm25IndexMap.has(tenantId)) {
+    bm25IndexMap.set(tenantId, new BM25Index());
+  }
+  return bm25IndexMap.get(tenantId)!;
+}
+
+/** tenant별 BM25 인덱스를 파일에서 복원 */
+export function restoreBM25ForTenant(tenantId: string): void {
+  try {
+    const { loadBM25IndexForTenant } = require('@/lib/db/file-store') as typeof import('@/lib/db/file-store');
+    const snapshot = loadBM25IndexForTenant(tenantId) as ReturnType<BM25Index['serialize']> | null;
+    if (snapshot) {
+      getBM25IndexForTenant(tenantId).deserialize(snapshot);
+    }
+  } catch {
+    // 빈 인덱스 유지
+  }
+}
